@@ -14,3 +14,8 @@ To run the server use the command
 ```
 go run main.go
 ```
+
+To compile it  run
+```
+go build -o ./build/server main.go router.go
+```
