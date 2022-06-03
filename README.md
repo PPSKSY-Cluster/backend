@@ -17,5 +17,9 @@ go run main.go
 
 To compile it  run
 ```
-go build -o ./build/server main.go router.go
+go build -o ./build/server main.go router.go mongodb.go
 ```
+
+## Docs
+
+Docs are provided via swagger and located under the route /api/docs 

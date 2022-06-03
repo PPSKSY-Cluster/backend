@@ -6,6 +6,7 @@ import (
 	"github.com/PPSKSY-Cluster/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 )
 
 func InitRouter(mdb *mdb) (*fiber.App, error) {
@@ -21,6 +22,7 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 	// define api routes
 	api := router.Group("/api")
 	api.Get("/ping", pingHandler())
+	api.Get("/docs/*", swagger.HandlerDefault)
 
 	var userRoutes fiber.Router = api.Group("/users")
 	handlers.InitUserHandlers(userRoutes)
