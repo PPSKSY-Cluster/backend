@@ -13,7 +13,12 @@ func main() {
 }
 
 func run() error {
-	router, err := InitRouter()
+	mdb, err := InitMongoDB()
+	if err != nil {
+		return err
+	}
+
+	router, err := InitRouter(mdb)
 	if err != nil {
 		return err
 	}

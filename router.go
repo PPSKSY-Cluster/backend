@@ -2,7 +2,7 @@ package main
 
 import "github.com/gofiber/fiber/v2"
 
-func InitRouter() (*fiber.App, error) {
+func InitRouter(mdb *mdb) (*fiber.App, error) {
 	router := fiber.New()
 
 	router.Get("/ping", pingHandler())
