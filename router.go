@@ -1,11 +1,25 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"os"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 func InitRouter(mdb *mdb) (*fiber.App, error) {
 	router := fiber.New()
 
-	router.Get("/ping", pingHandler())
+	// define CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: os.Getenv("CLIENT_URL"),
+		AllowHeaders: "Content-Type",
+		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+	}))
+
+	// define routes
+	router.Get("/api/ping", pingHandler())
 
 	return router, nil
 }
