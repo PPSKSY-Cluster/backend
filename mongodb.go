@@ -34,5 +34,10 @@ func InitMongoDB() (*mdb, error) {
 		return nil, err
 	}
 
+	err = mdb.client.Ping(mdb.ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return &mdb, nil
 }

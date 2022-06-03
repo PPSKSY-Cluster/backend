@@ -31,7 +31,6 @@ func run() error {
 	}
 
 	port := os.Getenv("PORT")
-	fmt.Printf("starting server on port %s\n", port)
 	router.Listen(":" + port)
 
 	return nil
