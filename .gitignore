@@ -1,2 +1,5 @@
 # build folder
 /build
+
+# environment variables as file
+/.env

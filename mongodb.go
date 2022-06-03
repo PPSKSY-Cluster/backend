@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +21,7 @@ func InitMongoDB() (*mdb, error) {
 
 	var mdb mdb
 
-	mongoClient, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/test"))
+	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -13,6 +15,11 @@ func main() {
 }
 
 func run() error {
+	err := godotenv.Load("./.env")
+	if err != nil {
+		return err
+	}
+
 	mdb, err := InitMongoDB()
 	if err != nil {
 		return err
@@ -23,7 +30,9 @@ func run() error {
 		return err
 	}
 
-	router.Listen(":3000")
+	port := os.Getenv("PORT")
+	fmt.Printf("starting server on port %s\n", port)
+	router.Listen(":" + port)
 
 	return nil
 }
