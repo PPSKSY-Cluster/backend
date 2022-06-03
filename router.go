@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/PPSKSY-Cluster/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func InitRouter(mdb *mdb) (*fiber.App, error) {
@@ -18,8 +18,12 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
 
-	// define routes
-	router.Get("/api/ping", pingHandler())
+	// define api routes
+	api := router.Group("/api")
+	api.Get("/ping", pingHandler())
+
+	var userRoutes fiber.Router = api.Group("/users")
+	handlers.InitUserHandlers(userRoutes)
 
 	return router, nil
 }
