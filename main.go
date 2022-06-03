@@ -1,13 +1,24 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	app := fiber.New()
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		os.Exit(1)
+	}
+}
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
-	})
+func run() error {
+	router, err := InitRouter()
+	if err != nil {
+		return err
+	}
 
-	app.Listen(":3000")
+	router.Listen(":3000")
+
+	return nil
 }
