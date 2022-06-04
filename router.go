@@ -28,6 +28,9 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 	userRoutes := api.Group("/users")
 	handlers.InitUserHandlers(userRoutes)
 
+	cResourceRoutes := api.Group("/cresources")
+	handlers.InitCResourceHandlers(cResourceRoutes)
+
 	return router, nil
 }
 
