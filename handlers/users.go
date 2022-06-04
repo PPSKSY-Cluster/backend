@@ -1,9 +1,12 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/PPSKSY-Cluster/backend/db"
+	"github.com/gofiber/fiber/v2"
+)
 
 type User struct {
-	ID string `json:"_id"`
+	ID string `json:"id"`
 }
 
 func InitUserHandlers(userRouter fiber.Router) {
@@ -23,7 +26,12 @@ func InitUserHandlers(userRouter fiber.Router) {
 // @Router       /api/users/ [get]
 func userListHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON([]User{})
+		users, err := db.GetAllUsers()
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(users)
 		return c.SendStatus(200)
 	}
 }
