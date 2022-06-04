@@ -22,4 +22,8 @@ go build -o ./build/server main.go router.go mongodb.go
 
 ## Docs
 
-Docs are provided via swagger and located under the route /api/docs 
+Docs are provided via swagger and located under the route /api/docs.
+You may regenerate them by running 
+```
+swag init
+```
