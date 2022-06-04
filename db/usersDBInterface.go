@@ -4,10 +4,15 @@ import (
 	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetAllUsers() ([]bson.M, error) {
+type User struct {
+	ID   primitive.ObjectID `bson:"_id" json:"_id"`
+	Name string             `bson:"name" json:"name"`
+}
+
+func GetAllUsers() ([]User, error) {
 
 	query := func() (interface{}, error) {
 		return mdbInstance.Client.Database(os.Getenv("DB_NAME")).Collection("users").Find(mdbInstance.Ctx, bson.M{})
@@ -18,7 +23,7 @@ func GetAllUsers() ([]bson.M, error) {
 		return nil, err
 	}
 
-	var users []bson.M
+	var users []User
 	if err = usersCursor.All(mdbInstance.Ctx, &users); err != nil {
 		return nil, err
 	}

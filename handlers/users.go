@@ -5,10 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type User struct {
-	ID string `json:"id"`
-}
-
 func InitUserHandlers(userRouter fiber.Router) {
 	userRouter.Get("/", userListHandler())
 	userRouter.Get("/:id", userDetailHandler())
@@ -57,7 +53,7 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(User{})
+		c.JSON(db.User{})
 		return c.SendStatus(201)
 	}
 }
@@ -71,7 +67,7 @@ func userCreateHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [put]
 func userUpdateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(User{})
+		c.JSON(db.User{})
 		return c.SendStatus(200)
 	}
 }
