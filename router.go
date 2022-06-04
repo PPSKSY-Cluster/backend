@@ -25,7 +25,7 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 	api.Get("/ping", pingHandler())
 	api.Get("/docs/*", docsHandler())
 
-	var userRoutes fiber.Router = api.Group("/users")
+	userRoutes := api.Group("/users")
 	handlers.InitUserHandlers(userRoutes)
 
 	return router, nil

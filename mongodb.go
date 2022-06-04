@@ -11,9 +11,9 @@ import (
 )
 
 type mdb struct {
-	client     mongo.Client
-	ctx        context.Context
-	cancelFunc context.CancelFunc
+	Client     mongo.Client
+	Ctx        context.Context
+	CancelFunc context.CancelFunc
 }
 
 func InitMongoDB() (*mdb, error) {
@@ -25,16 +25,16 @@ func InitMongoDB() (*mdb, error) {
 	if err != nil {
 		return nil, err
 	}
-	mdb.client = *mongoClient
+	mdb.Client = *mongoClient
 
-	mdb.ctx, mdb.cancelFunc = context.WithTimeout(context.Background(), 2000*time.Second)
+	mdb.Ctx, mdb.CancelFunc = context.WithTimeout(context.Background(), 2000*time.Second)
 
-	err = mdb.client.Connect(mdb.ctx)
+	err = mdb.Client.Connect(mdb.Ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = mdb.client.Ping(mdb.ctx, nil)
+	err = mdb.Client.Ping(mdb.Ctx, nil)
 	if err != nil {
 		return nil, err
 	}
