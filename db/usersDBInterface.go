@@ -9,11 +9,11 @@ import (
 
 func GetAllUsers() ([]bson.M, error) {
 
-	query := func() (*mongo.Cursor, error) {
+	query := func() (interface{}, error) {
 		return mdbInstance.Client.Database(os.Getenv("DB_NAME")).Collection("users").Find(mdbInstance.Ctx, bson.M{})
 	}
 
-	usersCursor, err := RunQuery(query)
+	usersCursor, err := runQueryToCursor(query)
 	if err != nil {
 		return nil, err
 	}
