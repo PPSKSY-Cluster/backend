@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/swagger"
 )
 
-func InitRouter(mdb *mdb) (*fiber.App, error) {
+func InitRouter() (*fiber.App, error) {
 	router := fiber.New()
 
 	// define CORS

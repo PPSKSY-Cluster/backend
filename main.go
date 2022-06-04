@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/joho/godotenv"
 )
 
@@ -26,12 +27,12 @@ func run() error {
 		return err
 	}
 
-	mdb, err := InitMongoDB()
+	err = db.InitDB()
 	if err != nil {
 		return err
 	}
 
-	router, err := InitRouter(mdb)
+	router, err := InitRouter()
 	if err != nil {
 		return err
 	}

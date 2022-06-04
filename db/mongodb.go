@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -10,20 +10,22 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type mdb struct {
+type MDB struct {
 	Client     mongo.Client
 	Ctx        context.Context
 	CancelFunc context.CancelFunc
 }
 
-func InitMongoDB() (*mdb, error) {
+var mdbInstance MDB
+
+func InitDB() error {
 	fmt.Println("Connecting to mongodb")
 
-	var mdb mdb
+	var mdb MDB
 
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	mdb.Client = *mongoClient
 
@@ -31,13 +33,20 @@ func InitMongoDB() (*mdb, error) {
 
 	err = mdb.Client.Connect(mdb.Ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = mdb.Client.Ping(mdb.Ctx, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &mdb, nil
+	mdbInstance = mdb
+	return nil
+}
+
+type Query func() (_ *mongo.Cursor, _ error)
+
+func RunQuery(f Query) (*mongo.Cursor, error) {
+	return f()
 }
