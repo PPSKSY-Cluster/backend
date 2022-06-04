@@ -7,6 +7,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title PPSKSY-Cluster API
+// @version 1.0
+// @description This is the API for the PPSKSY-Cluster Webapplication
+// @license.name MIT
+// @host localhost:8080
+// @BasePath /
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())

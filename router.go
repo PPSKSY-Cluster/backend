@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	_ "github.com/PPSKSY-Cluster/backend/docs"
 	"github.com/PPSKSY-Cluster/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -22,7 +23,7 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 	// define api routes
 	api := router.Group("/api")
 	api.Get("/ping", pingHandler())
-	api.Get("/docs/*", swagger.HandlerDefault)
+	api.Get("/docs/*", docsHandler())
 
 	var userRoutes fiber.Router = api.Group("/users")
 	handlers.InitUserHandlers(userRoutes)
@@ -30,6 +31,20 @@ func InitRouter(mdb *mdb) (*fiber.App, error) {
 	return router, nil
 }
 
+// @Description  The route that serves the swagger documentation
+// @Tags         general
+// @Produce      html
+// @Success      200  {html} html
+// @Router       /api/docs/ [get]
+func docsHandler() func(*fiber.Ctx) error {
+	return swagger.HandlerDefault
+}
+
+// @Description  Ping route to act as healthcheck
+// @Tags         general
+// @Produce      json
+// @Success      200  {string} string
+// @Router       /api/ping [get]
 func pingHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		return c.SendString("pong")
