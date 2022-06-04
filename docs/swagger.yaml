@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  handlers.CResource:
+    properties:
+      _id:
+        type: string
+    type: object
   handlers.User:
     properties:
       _id:
@@ -14,6 +19,83 @@ info:
   title: PPSKSY-Cluster API
   version: "1.0"
 paths:
+  /api/cresources/:
+    get:
+      description: Get all cluster resources
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.CResource'
+            type: array
+      tags:
+      - cluster-resources
+    post:
+      consumes:
+      - application/json
+      description: Create cluster resource
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
+  /api/cresources/{id}:
+    delete:
+      description: Delete cluster resource
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+      tags:
+      - cluster-resources
+    get:
+      description: Get cluster resource by ID
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
+    put:
+      consumes:
+      - application/json
+      description: Update cluster resource
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
   /api/docs/:
     get:
       description: The route that serves the swagger documentation

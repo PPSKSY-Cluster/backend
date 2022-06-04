@@ -19,6 +19,125 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/cresources/": {
+            "get": {
+                "description": "Get all cluster resources",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cluster-resources"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.CResource"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create cluster resource",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cluster-resources"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CResource"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cresources/{id}": {
+            "get": {
+                "description": "Get cluster resource by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cluster-resources"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CResource ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CResource"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update cluster resource",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cluster-resources"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CResource ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CResource"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete cluster resource",
+                "tags": [
+                    "cluster-resources"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CResource ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/docs/": {
             "get": {
                 "description": "The route that serves the swagger documentation",
@@ -178,6 +297,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.CResource": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.User": {
             "type": "object",
             "properties": {
