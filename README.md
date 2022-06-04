@@ -27,3 +27,15 @@ You may regenerate them by running
 ```
 swag init
 ```
+
+## Configuration and secrets
+
+Currently all that is located in your .env in the root directory.
+Possible fields are :
+
+| key        | example value                    | description                            |
+|------------|----------------------------------|----------------------------------------|
+|DB_NAME     | test                             | The name of your database              |
+|MONGODB_URI | mongodb://localhost:27017/test   | The connection string to your database |
+|PORT        | 8080                             | The port to start the server on        |
+|CLIENT_URL  | http://localhost:3000            | The URL the client is requesting from  |
