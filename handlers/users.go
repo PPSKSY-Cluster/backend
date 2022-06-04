@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InitUserHandlers(userRouter fiber.Router) {
@@ -40,7 +41,18 @@ func userListHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [get]
 func userDetailHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(User{})
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		user, err := db.GetUserById(id)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(user)
 		return c.SendStatus(200)
 	}
 }

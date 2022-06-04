@@ -30,3 +30,23 @@ func GetAllUsers() ([]User, error) {
 
 	return users, nil
 }
+
+func GetUserById(_id primitive.ObjectID) (User, error) {
+
+	query := func() (interface{}, error) {
+		singleRes := mdbInstance.Client.Database(os.Getenv("DB_NAME")).Collection("users").FindOne(mdbInstance.Ctx, bson.M{"_id": _id})
+		return singleRes, singleRes.Err()
+	}
+
+	userSingleRes, err := runQueryToSingleRes(query)
+	if err != nil {
+		return User{}, err
+	}
+
+	var user User
+	if err = userSingleRes.Decode(&user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
