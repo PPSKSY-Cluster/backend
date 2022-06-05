@@ -89,7 +89,20 @@ func userCreateHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [put]
 func userUpdateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(db.User{})
+		u := new(db.User)
+		if err := c.BodyParser(u); err != nil {
+			return c.SendStatus(500)
+		}
+
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+
+		user, err := db.EditUser(id, *u)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(user)
 		return c.SendStatus(200)
 	}
 }

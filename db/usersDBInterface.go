@@ -54,10 +54,29 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 func AddUser(user User) (User, error) {
 
 	query := func() (interface{}, error) {
-		return mdbInstance.Client.
+		res, err := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
 			InsertOne(mdbInstance.Ctx, user)
+		return res, err
+	}
+
+	_, err := runQuery(query)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+func EditUser(_id primitive.ObjectID, user User) (User, error) {
+
+	query := func() (interface{}, error) {
+		res, err := mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			ReplaceOne(mdbInstance.Ctx, bson.M{"_id": _id}, user)
+		return res, err
 	}
 
 	_, err := runQuery(query)
