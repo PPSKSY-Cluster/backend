@@ -8,8 +8,8 @@ import (
 )
 
 type User struct {
-	ID   primitive.ObjectID `bson:"_id" json:"_id"`
-	Name string             `bson:"name" json:"name"`
+	ID   primitive.ObjectID `bson:"_id" 'json:"_id"`
+	Name string             `bson:"name" 'json:"name"`
 }
 
 func GetAllUsers() ([]User, error) {
@@ -45,6 +45,23 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 
 	var user User
 	if err = userSingleRes.Decode(&user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+func AddUser(user User) (User, error) {
+
+	query := func() (interface{}, error) {
+		return mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			InsertOne(mdbInstance.Ctx, user)
+	}
+
+	_, err := runQuery(query)
+	if err != nil {
 		return User{}, err
 	}
 

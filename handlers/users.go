@@ -65,7 +65,17 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(db.User{})
+		u := new(db.User)
+		if err := c.BodyParser(u); err != nil {
+			return c.SendStatus(500)
+		}
+
+		user, err := db.AddUser(*u)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(user)
 		return c.SendStatus(201)
 	}
 }
