@@ -96,6 +96,9 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return c.SendStatus(500)
+		}
 
 		user, err := db.EditUser(id, *u)
 		if err != nil {
@@ -114,6 +117,17 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [delete]
 func userDeleteHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		err = db.DeleteUser(id)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
 		return c.SendStatus(204)
 	}
 }

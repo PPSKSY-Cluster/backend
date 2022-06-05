@@ -72,11 +72,10 @@ func AddUser(user User) (User, error) {
 func EditUser(_id primitive.ObjectID, user User) (User, error) {
 
 	query := func() (interface{}, error) {
-		res, err := mdbInstance.Client.
+		return mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
 			ReplaceOne(mdbInstance.Ctx, bson.M{"_id": _id}, user)
-		return res, err
 	}
 
 	_, err := runQuery(query)
@@ -85,4 +84,21 @@ func EditUser(_id primitive.ObjectID, user User) (User, error) {
 	}
 
 	return user, nil
+}
+
+func DeleteUser(_id primitive.ObjectID) error {
+
+	query := func() (interface{}, error) {
+		return mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			DeleteOne(mdbInstance.Ctx, bson.M{"_id": _id})
+	}
+
+	_, err := runQuery(query)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
