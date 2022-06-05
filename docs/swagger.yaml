@@ -1,0 +1,200 @@
+basePath: /
+definitions:
+  handlers.CResource:
+    properties:
+      _id:
+        type: string
+    type: object
+  handlers.User:
+    properties:
+      _id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API for the PPSKSY-Cluster Webapplication
+  license:
+    name: MIT
+  title: PPSKSY-Cluster API
+  version: "1.0"
+paths:
+  /api/cresources/:
+    get:
+      description: Get all cluster resources
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.CResource'
+            type: array
+      tags:
+      - cluster-resources
+    post:
+      consumes:
+      - application/json
+      description: Create cluster resource
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
+  /api/cresources/{id}:
+    delete:
+      description: Delete cluster resource
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+      tags:
+      - cluster-resources
+    get:
+      description: Get cluster resource by ID
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
+    put:
+      consumes:
+      - application/json
+      description: Update cluster resource
+      parameters:
+      - description: CResource ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CResource'
+      tags:
+      - cluster-resources
+  /api/docs/:
+    get:
+      description: The route that serves the swagger documentation
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: html
+      tags:
+      - general
+  /api/ping:
+    get:
+      description: Ping route to act as healthcheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - general
+  /api/users/:
+    get:
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.User'
+            type: array
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.User'
+      tags:
+      - users
+  /api/users/{id}:
+    delete:
+      description: Delete user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+      tags:
+      - users
+    get:
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.User'
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.User'
+      tags:
+      - users
+swagger: "2.0"
