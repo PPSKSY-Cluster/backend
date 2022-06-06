@@ -1,15 +1,19 @@
 package handlers
 
 import (
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InitUserHandlers(userRouter fiber.Router) {
+	userRouter.Post("/", userCreateHandler())
+
+	userRouter.Use(auth.CheckToken())
 	userRouter.Get("/", userListHandler())
 	userRouter.Get("/:id", userDetailHandler())
-	userRouter.Post("/", userCreateHandler())
 	userRouter.Put("/:id", userUpdateHandler())
 	userRouter.Delete("/:id", userDeleteHandler())
 
