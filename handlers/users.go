@@ -65,7 +65,17 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(db.User{})
+		u := new(db.User)
+		if err := c.BodyParser(u); err != nil {
+			return c.SendStatus(500)
+		}
+
+		user, err := db.AddUser(*u)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(user)
 		return c.SendStatus(201)
 	}
 }
@@ -79,7 +89,23 @@ func userCreateHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [put]
 func userUpdateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.JSON(db.User{})
+		u := new(db.User)
+		if err := c.BodyParser(u); err != nil {
+			return c.SendStatus(500)
+		}
+
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		user, err := db.EditUser(id, *u)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		c.JSON(user)
 		return c.SendStatus(200)
 	}
 }
@@ -91,6 +117,17 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 // @Router       /api/users/{id} [delete]
 func userDeleteHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
+		err = db.DeleteUser(id)
+		if err != nil {
+			return c.SendStatus(500)
+		}
+
 		return c.SendStatus(204)
 	}
 }
