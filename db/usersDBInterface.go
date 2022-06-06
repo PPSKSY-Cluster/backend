@@ -56,8 +56,29 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 	return user, nil
 }
 
-func AddUser(user User) (User, error) {
+func GetUserByUsername(username string) (User, error) {
+	query := func() (interface{}, error) {
+		singleRes := mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			FindOne(mdbInstance.Ctx, bson.M{"username": username})
+		return singleRes, singleRes.Err()
+	}
 
+	userSingleRes, err := runQueryToSingleRes(query)
+	if err != nil {
+		return User{}, err
+	}
+
+	var user User
+	if err := userSingleRes.Decode(&user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+func AddUser(user User) (User, error) {
 	query := func() (interface{}, error) {
 		res, err := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
