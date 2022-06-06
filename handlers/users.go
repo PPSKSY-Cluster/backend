@@ -20,6 +20,7 @@ func InitUserHandlers(userRouter fiber.Router) {
 // @Tags         users
 // @Produce      json
 // @Success      200  {array}  User
+// @Failure	     500
 // @Router       /api/users/ [get]
 func userListHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -38,6 +39,8 @@ func userListHandler() func(*fiber.Ctx) error {
 // @Produce      json
 // @Param        id   path      string  true  "User ID"
 // @Success      200  {object}  User
+// @Failure	     404
+// @Failure	     500
 // @Router       /api/users/{id} [get]
 func userDetailHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -49,7 +52,7 @@ func userDetailHandler() func(*fiber.Ctx) error {
 
 		user, err := db.GetUserById(id)
 		if err != nil {
-			return c.SendStatus(500)
+			return c.SendStatus(404)
 		}
 
 		c.JSON(user)
@@ -62,6 +65,7 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Success      201  {object}  User
+// @Failure      500  {object}  Error
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -86,6 +90,7 @@ func userCreateHandler() func(*fiber.Ctx) error {
 // @Produce      json
 // @Param        id   path      string  true  "User ID"
 // @Success      200  {object}  User
+// @Failure	     500
 // @Router       /api/users/{id} [put]
 func userUpdateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -114,6 +119,7 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 // @Tags         users
 // @Param        id   path      string  true  "User ID"
 // @Success      204
+// @Failure	     500
 // @Router       /api/users/{id} [delete]
 func userDeleteHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {

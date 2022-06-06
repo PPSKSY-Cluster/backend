@@ -9,13 +9,15 @@ import (
 
 type User struct {
 	ID   primitive.ObjectID `bson:"_id" 'json:"_id"`
-	Name string             `bson:"name" 'json:"name"`
 }
 
 func GetAllUsers() ([]User, error) {
 
 	query := func() (interface{}, error) {
-		return mdbInstance.Client.Database(os.Getenv("DB_NAME")).Collection("users").Find(mdbInstance.Ctx, bson.M{})
+		return mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			Find(mdbInstance.Ctx, bson.M{})
 	}
 
 	usersCursor, err := runQueryToCursor(query)
@@ -34,7 +36,10 @@ func GetAllUsers() ([]User, error) {
 func GetUserById(_id primitive.ObjectID) (User, error) {
 
 	query := func() (interface{}, error) {
-		singleRes := mdbInstance.Client.Database(os.Getenv("DB_NAME")).Collection("users").FindOne(mdbInstance.Ctx, bson.M{"_id": _id})
+		singleRes := mdbInstance.Client.
+			Database(os.Getenv("DB_NAME")).
+			Collection("users").
+			FindOne(mdbInstance.Ctx, bson.M{"_id": _id})
 		return singleRes, singleRes.Err()
 	}
 

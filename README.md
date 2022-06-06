@@ -13,12 +13,12 @@ Authentication/authorization is done using jwt and bcrypt.
 
 To run the server use the command
 ```
-go run main.go
+go run main.go router.go
 ```
 
 To compile it  run
 ```
-go build -o ./build/server main.go router.go mongodb.go
+go build -o ./build/server main.go router.go
 ```
 
 ## Docs
