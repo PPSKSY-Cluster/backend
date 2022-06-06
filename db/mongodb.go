@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -46,32 +45,6 @@ func InitDB() error {
 	return nil
 }
 
-type Query func() (_ interface{}, _ error)
-
-func runQuery(f Query) (interface{}, error) {
+func runQuery[T any](f func() (T, error)) (T, error) {
 	return f()
-}
-
-func runQueryToCursor(query Query) (*mongo.Cursor, error) {
-	userI, err := runQuery(query)
-	if err != nil {
-		return &mongo.Cursor{}, err
-	}
-	user, ok := userI.(*mongo.Cursor)
-	if !ok {
-		return &mongo.Cursor{}, errors.New("Could not convert userI to *mongo.Cursor")
-	}
-	return user, nil
-}
-
-func runQueryToSingleRes(query Query) (*mongo.SingleResult, error) {
-	userI, err := runQuery(query)
-	if err != nil {
-		return &mongo.SingleResult{}, err
-	}
-	user, ok := userI.(*mongo.SingleResult)
-	if !ok {
-		return &mongo.SingleResult{}, errors.New("Could not convert userI to *mongo.SingleResult")
-	}
-	return user, nil
 }
