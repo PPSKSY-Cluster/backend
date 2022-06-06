@@ -65,17 +65,27 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Success      201  {object}  User
+// @Failure      400  {object}  Error
 // @Failure      500  {object}  Error
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		u := new(db.User)
 		if err := c.BodyParser(u); err != nil {
+			c.JSON(bson.M{"error": err.Error()})
 			return c.SendStatus(500)
 		}
 
+		hashedPW, err := auth.HashPW(u.Password)
+		if err != nil {
+			c.JSON(bson.M{"error": err.Error()})
+			return c.SendStatus(500)
+		}
+		u.Password = hashedPW
+
 		user, err := db.AddUser(*u)
 		if err != nil {
+			c.JSON(bson.M{"error": err.Error()})
 			return c.SendStatus(500)
 		}
 
