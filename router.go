@@ -44,7 +44,7 @@ func InitRouter() (*fiber.App, error) {
 // @Param        username   body   string  true  "Username"
 // @Param        password   body   string  true  "Password"
 // @Success      200  {string} string
-// @Success      401  {}
+// @Success      401
 // @Router       /api/login [post]
 func loginHandler() func(c *fiber.Ctx) error {
 	type LoginPair struct {

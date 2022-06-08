@@ -157,6 +157,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/login": {
+            "post": {
+                "description": "Route for login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "parameters": [
+                    {
+                        "description": "Username",
+                        "name": "username",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Password",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/ping": {
             "get": {
                 "description": "Ping route to act as healthcheck",
@@ -191,9 +236,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.User"
+                                "$ref": "#/definitions/db.User"
                             }
                         }
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             },
@@ -212,7 +260,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handlers.User"
+                            "$ref": "#/definitions/db.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -240,8 +300,14 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.User"
+                            "$ref": "#/definitions/db.User"
                         }
+                    },
+                    "404": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             },
@@ -269,8 +335,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.User"
+                            "$ref": "#/definitions/db.User"
                         }
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             },
@@ -291,21 +360,32 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": ""
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             }
         }
     },
     "definitions": {
-        "handlers.CResource": {
+        "db.User": {
             "type": "object",
+            "required": [
+                "username"
+            ],
             "properties": {
                 "_id": {
                     "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
                 }
             }
         },
-        "handlers.User": {
+        "handlers.CResource": {
             "type": "object",
             "properties": {
                 "_id": {

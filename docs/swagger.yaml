@@ -1,11 +1,17 @@
 basePath: /
 definitions:
-  handlers.CResource:
+  db.User:
     properties:
       _id:
         type: string
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - username
     type: object
-  handlers.User:
+  handlers.CResource:
     properties:
       _id:
         type: string
@@ -108,6 +114,35 @@ paths:
             type: html
       tags:
       - general
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Route for login
+      parameters:
+      - description: Username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: ""
+      tags:
+      - general
   /api/ping:
     get:
       description: Ping route to act as healthcheck
@@ -130,8 +165,10 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/handlers.User'
+              $ref: '#/definitions/db.User'
             type: array
+        "500":
+          description: ""
       tags:
       - users
     post:
@@ -144,7 +181,15 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlers.User'
+            $ref: '#/definitions/db.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       tags:
       - users
   /api/users/{id}:
@@ -158,6 +203,8 @@ paths:
         type: string
       responses:
         "204":
+          description: ""
+        "500":
           description: ""
       tags:
       - users
@@ -175,7 +222,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.User'
+            $ref: '#/definitions/db.User'
+        "404":
+          description: ""
+        "500":
+          description: ""
       tags:
       - users
     put:
@@ -194,7 +245,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.User'
+            $ref: '#/definitions/db.User'
+        "500":
+          description: ""
       tags:
       - users
 swagger: "2.0"
