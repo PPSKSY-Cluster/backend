@@ -59,7 +59,7 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 	return user, nil
 }
 
-func GetUserByUsername(username string) (User, error) {
+func GetUserCredentials(username string) (User, error) {
 	query := func() (*mongo.SingleResult, error) {
 		singleRes := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
@@ -83,11 +83,10 @@ func GetUserByUsername(username string) (User, error) {
 
 func AddUser(user User) (User, error) {
 	query := func() (*mongo.InsertOneResult, error) {
-		res, err := mdbInstance.Client.
+		return mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
 			InsertOne(mdbInstance.Ctx, user)
-		return res, err
 	}
 
 	if err := mdbInstance.Validate.Struct(user); err != nil {

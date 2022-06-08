@@ -14,7 +14,7 @@ import (
 
 // Helper to generate a JWT token on login
 func CheckCredentials(username, password string) (string, error) {
-	user, err := db.GetUserByUsername(username)
+	user, err := db.GetUserCredentials(username)
 	if err != nil {
 		return "", err
 	}
