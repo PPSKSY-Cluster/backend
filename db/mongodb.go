@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -14,6 +15,7 @@ type MDB struct {
 	Client     mongo.Client
 	Ctx        context.Context
 	CancelFunc context.CancelFunc
+	Validate *validator.Validate
 }
 
 var mdbInstance MDB
@@ -22,6 +24,8 @@ func InitDB() error {
 	fmt.Println("Connecting to mongodb")
 
 	var mdb MDB
+	
+	mdb.Validate = validator.New()
 
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {

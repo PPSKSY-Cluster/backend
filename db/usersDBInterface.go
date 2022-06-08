@@ -9,9 +9,9 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id" 'json:"_id"`
-	Username string             `bson:"username" 'json:"username"`
-	Password string             `bson:"password" 'json:"password"`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
+	Password string             `bson:"password" json:"-"`
 }
 
 func GetAllUsers() ([]User, error) {
@@ -88,6 +88,10 @@ func AddUser(user User) (User, error) {
 			Collection("users").
 			InsertOne(mdbInstance.Ctx, user)
 		return res, err
+	}
+
+	if err := mdbInstance.Validate.Struct(user); err != nil {
+		return User{}, err
 	}
 
 	insertRes, err := runQuery[*mongo.InsertOneResult](query)
