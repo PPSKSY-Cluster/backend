@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
@@ -64,7 +65,8 @@ func GetUserCredentials(username string) (User, error) {
 		singleRes := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
-			FindOne(mdbInstance.Ctx, bson.M{"username": username})
+			FindOne(mdbInstance.Ctx, bson.M{"username": username},
+				options.FindOne().SetProjection(bson.M{"password": 1}))
 		return singleRes, singleRes.Err()
 	}
 
@@ -109,7 +111,7 @@ func EditUser(_id primitive.ObjectID, user User) (User, error) {
 		return mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
-			ReplaceOne(mdbInstance.Ctx, bson.M{"_id": _id}, user)
+			UpdateOne(mdbInstance.Ctx, bson.M{"_id": _id}, bson.M{"$set": user})
 	}
 
 	_, err := runQuery[*mongo.UpdateResult](query)
