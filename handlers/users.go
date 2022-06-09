@@ -12,7 +12,7 @@ func InitUserHandlers(userRouter fiber.Router) {
 	userRouter.Post("/", userCreateHandler())
 
 	userRouter.Use(auth.CheckToken())
-	userRouter.Get("/", userListHandler())
+	userRouter.Get("/", UserListHandler())
 	userRouter.Get("/:id", userDetailHandler())
 	userRouter.Put("/:id", userUpdateHandler())
 	userRouter.Delete("/:id", userDeleteHandler())
@@ -26,7 +26,7 @@ func InitUserHandlers(userRouter fiber.Router) {
 // @Success      200  {array}  db.User
 // @Failure	     500
 // @Router       /api/users/ [get]
-func userListHandler() func(*fiber.Ctx) error {
+func UserListHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		users, err := db.GetAllUsers()
 		if err != nil {
