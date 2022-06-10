@@ -1,15 +1,19 @@
 package handlers
 
 import (
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InitUserHandlers(userRouter fiber.Router) {
+	userRouter.Post("/", userCreateHandler())
+
+	userRouter.Use(auth.CheckToken())
 	userRouter.Get("/", userListHandler())
 	userRouter.Get("/:id", userDetailHandler())
-	userRouter.Post("/", userCreateHandler())
 	userRouter.Put("/:id", userUpdateHandler())
 	userRouter.Delete("/:id", userDeleteHandler())
 
@@ -19,7 +23,8 @@ func InitUserHandlers(userRouter fiber.Router) {
 // @Description  Get all users
 // @Tags         users
 // @Produce      json
-// @Success      200  {array}  User
+// @Success      200  {array}  db.User
+// @Failure	     500
 // @Router       /api/users/ [get]
 func userListHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -37,7 +42,9 @@ func userListHandler() func(*fiber.Ctx) error {
 // @Tags         users
 // @Produce      json
 // @Param        id   path      string  true  "User ID"
-// @Success      200  {object}  User
+// @Success      200  {object}  db.User
+// @Failure	     404
+// @Failure	     500
 // @Router       /api/users/{id} [get]
 func userDetailHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -49,7 +56,7 @@ func userDetailHandler() func(*fiber.Ctx) error {
 
 		user, err := db.GetUserById(id)
 		if err != nil {
-			return c.SendStatus(500)
+			return c.SendStatus(404)
 		}
 
 		c.JSON(user)
@@ -61,17 +68,28 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Success      201  {object}  User
+// @Success      201  {object}  db.User
+// @Failure      400  {object}  string
+// @Failure      500  {object}  string
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		u := new(db.User)
 		if err := c.BodyParser(u); err != nil {
+			c.JSON(bson.M{"error": err.Error()})
 			return c.SendStatus(500)
 		}
 
+		hashedPW, err := auth.HashPW(u.Password)
+		if err != nil {
+			c.JSON(bson.M{"error": err.Error()})
+			return c.SendStatus(500)
+		}
+		u.Password = hashedPW
+
 		user, err := db.AddUser(*u)
 		if err != nil {
+			c.JSON(bson.M{"error": err.Error()})
 			return c.SendStatus(500)
 		}
 
@@ -85,7 +103,8 @@ func userCreateHandler() func(*fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "User ID"
-// @Success      200  {object}  User
+// @Success      200  {object}  db.User
+// @Failure	     500
 // @Router       /api/users/{id} [put]
 func userUpdateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -114,6 +133,7 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 // @Tags         users
 // @Param        id   path      string  true  "User ID"
 // @Success      204
+// @Failure	     500
 // @Router       /api/users/{id} [delete]
 func userDeleteHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
