@@ -8,6 +8,7 @@ import (
 	"github.com/PPSKSY-Cluster/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -21,6 +22,9 @@ func InitRouter() (*fiber.App, error) {
 		AllowHeaders: "Content-Type",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	// setup logging
+	router.Use(logger.New())
 
 	// define api routes
 	api := router.Group("/api")
