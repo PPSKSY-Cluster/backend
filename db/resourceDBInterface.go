@@ -11,7 +11,7 @@ type CResource struct {
 	ID    primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name  string             `bson:"name" json:"name"`
 	Type  string             `bson:"type" json:"type"`
-	Users []string           `bson:"users" json:"users"`
+	Users []User             `bson:"users" json:"users"`
 }
 
 var collectionName = "cResources"
