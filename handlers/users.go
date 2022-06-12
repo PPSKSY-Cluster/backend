@@ -124,6 +124,7 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
+		user.ID = id
 		c.JSON(user)
 		return c.SendStatus(200)
 	}

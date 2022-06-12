@@ -107,12 +107,13 @@ func cresourceUpdateHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		user, err := db.EditResource(id, *cr)
+		cResource, err := db.EditResource(id, *cr)
 		if err != nil {
 			return c.SendStatus(500)
 		}
 
-		c.JSON(user)
+		cResource.ID = id
+		c.JSON(cResource)
 		return c.SendStatus(200)
 	}
 }
@@ -131,7 +132,7 @@ func cresourceDeleteHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		err = db.DeleteUser(id)
+		err = db.DeleteResource(id)
 		if err != nil {
 			return c.SendStatus(500)
 		}
