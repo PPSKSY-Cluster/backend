@@ -19,7 +19,10 @@ func CheckCredentials(username, password string) (string, error) {
 		return "", err
 	}
 
-	bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", err
+	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
 

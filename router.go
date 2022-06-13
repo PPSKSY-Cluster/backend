@@ -19,7 +19,7 @@ func InitRouter() (*fiber.App, error) {
 	// define CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: os.Getenv("CLIENT_URL"),
-		AllowHeaders: "Content-Type",
+		AllowHeaders: "Content-Type, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
 
