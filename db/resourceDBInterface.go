@@ -1,17 +1,49 @@
 package db
 
 import (
+	"os"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"os"
+)
+
+type CResourceType int64
+
+const (
+	customRT CResourceType = -1
+	noneRT   CResourceType = 0
+	gpuRT    CResourceType = 1
+)
+
+type LoadBalancing int64
+
+const (
+	customLB     LoadBalancing = -1
+	noneLB       LoadBalancing = 0
+	roundRobinLB LoadBalancing = 1
+)
+
+type OSType int64
+
+const (
+	linuxOS   OSType = 1
+	windowsOS OSType = 2
+	macOS     OSType = 3
 )
 
 type CResource struct {
-	ID    primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Name  string             `bson:"name" json:"name"`
-	Type  string             `bson:"type" json:"type"`
-	Users []User             `bson:"users" json:"users"`
+	ID                       primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
+	Name                     string               `bson:"name" json:"name"`
+	Description              string               `bson:"description" json:"description"`
+	Nodes                    []int64              `bson:"nodes" json:"nodes"`
+	Type                     CResourceType        `bson:"type" json:"type"`
+	Admins                   []User               `bson:"admins" json:"admins"`
+	BalancingAlg             LoadBalancing        `bson:"balancingAlg" json:"balancingAlg"`
+	Reservations             []primitive.ObjectID `bson:"reservations" json:"reservations"`
+	HighAvailability         bool                 `bson:"highAvailability" json:"highAvailability"`                 // HA
+	HighPerformanceComputing bool                 `bson:"highPerformanceComputing" json:"highPerformanceComputing"` // HPC
+	OperatingSystem          OSType               `bson:"operatingSystem" json:"operatingSystem"`
 }
 
 var collectionName = "cResources"
