@@ -8,11 +8,11 @@ import (
 )
 
 func InitCResourceHandlers(cresourceRouter fiber.Router) {
-	cresourceRouter.Get("/", cresourceListHandler())
-	cresourceRouter.Get("/:id", cresourceDetailHandler())
-	cresourceRouter.Post("/", cresourceCreateHandler())
-	cresourceRouter.Put("/:id", cresourceUpdateHandler())
-	cresourceRouter.Delete("/:id", cresourceDeleteHandler())
+	cresourceRouter.Get("/", cResourceListHandler())
+	cresourceRouter.Get("/:id", cResourceDetailHandler())
+	cresourceRouter.Post("/", cResourceCreateHandler())
+	cresourceRouter.Put("/:id", cResourceUpdateHandler())
+	cresourceRouter.Delete("/:id", cResourceDeleteHandler())
 
 	return
 }
@@ -23,9 +23,9 @@ func InitCResourceHandlers(cresourceRouter fiber.Router) {
 // @Success      200  {array}  CResource
 // @Failure		 500
 // @Router       /api/cresources/ [get]
-func cresourceListHandler() func(c *fiber.Ctx) error {
+func cResourceListHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		cResources, err := db.GetAllResources()
+		cResources, err := db.GetAllCResources()
 		if err != nil {
 			return c.SendStatus(500)
 		}
@@ -42,7 +42,7 @@ func cresourceListHandler() func(c *fiber.Ctx) error {
 // @Success      200  {object}  CResource
 // @Failure 	 404
 // @Router       /api/cresources/{id} [get]
-func cresourceDetailHandler() func(c *fiber.Ctx) error {
+func cResourceDetailHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
@@ -50,7 +50,7 @@ func cresourceDetailHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		cResource, err := db.GetResourceById(id)
+		cResource, err := db.GetCResourceById(id)
 		if err != nil {
 			return c.SendStatus(404)
 		}
@@ -67,7 +67,7 @@ func cresourceDetailHandler() func(c *fiber.Ctx) error {
 // @Success      201  {object}  CResource
 // @Failure      500  {object}  string
 // @Router       /api/cresources/ [post]
-func cresourceCreateHandler() func(c *fiber.Ctx) error {
+func cResourceCreateHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		cr := new(db.CResource)
 		if err := c.BodyParser(cr); err != nil {
@@ -75,7 +75,7 @@ func cresourceCreateHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		cResource, err := db.AddResource(*cr)
+		cResource, err := db.AddCResource(*cr)
 		if err != nil {
 			c.JSON(bson.M{"error": err.Error()})
 			return c.SendStatus(500)
@@ -94,7 +94,7 @@ func cresourceCreateHandler() func(c *fiber.Ctx) error {
 // @Success      200  {object}  CResource
 // @Failure      500
 // @Router       /api/cresources/{id} [put]
-func cresourceUpdateHandler() func(c *fiber.Ctx) error {
+func cResourceUpdateHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		cr := new(db.CResource)
 		if err := c.BodyParser(cr); err != nil {
@@ -107,7 +107,7 @@ func cresourceUpdateHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		cResource, err := db.EditResource(id, *cr)
+		cResource, err := db.EditCResource(id, *cr)
 		if err != nil {
 			return c.SendStatus(500)
 		}
@@ -124,7 +124,7 @@ func cresourceUpdateHandler() func(c *fiber.Ctx) error {
 // @Success      204
 // @Failure      500
 // @Router       /api/cresources/{id} [delete]
-func cresourceDeleteHandler() func(c *fiber.Ctx) error {
+func cResourceDeleteHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
@@ -132,7 +132,7 @@ func cresourceDeleteHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		err = db.DeleteResource(id)
+		err = db.DeleteCResource(id)
 		if err != nil {
 			return c.SendStatus(500)
 		}

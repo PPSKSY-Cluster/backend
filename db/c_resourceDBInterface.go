@@ -48,7 +48,7 @@ type CResource struct {
 
 var collectionName = "cResources"
 
-func GetAllResources() ([]CResource, error) {
+func GetAllCResources() ([]CResource, error) {
 
 	query := func() (*mongo.Cursor, error) {
 		return mdbInstance.Client.
@@ -70,7 +70,7 @@ func GetAllResources() ([]CResource, error) {
 	return cResources, nil
 }
 
-func GetResourceById(_id primitive.ObjectID) (CResource, error) {
+func GetCResourceById(_id primitive.ObjectID) (CResource, error) {
 
 	query := func() (*mongo.SingleResult, error) {
 		singleRes := mdbInstance.Client.
@@ -93,7 +93,7 @@ func GetResourceById(_id primitive.ObjectID) (CResource, error) {
 	return cResource, nil
 }
 
-func AddResource(cResource CResource) (CResource, error) {
+func AddCResource(cResource CResource) (CResource, error) {
 
 	query := func() (*mongo.InsertOneResult, error) {
 		return mdbInstance.Client.
@@ -116,7 +116,7 @@ func AddResource(cResource CResource) (CResource, error) {
 	return cResource, nil
 }
 
-func EditResource(_id primitive.ObjectID, cResource CResource) (CResource, error) {
+func EditCResource(_id primitive.ObjectID, cResource CResource) (CResource, error) {
 
 	query := func() (*mongo.UpdateResult, error) {
 		return mdbInstance.Client.
@@ -135,7 +135,7 @@ func EditResource(_id primitive.ObjectID, cResource CResource) (CResource, error
 	return cResource, nil
 }
 
-func DeleteResource(_id primitive.ObjectID) error {
+func DeleteCResource(_id primitive.ObjectID) error {
 
 	query := func() (*mongo.DeleteResult, error) {
 		return mdbInstance.Client.
