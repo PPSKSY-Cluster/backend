@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"os"
 	"testing"
 
 	"github.com/PPSKSY-Cluster/backend/db"
@@ -11,6 +12,7 @@ func Test_users(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer db.DropDB(os.Getenv("DB_NAME"))
 
 	user := db.User{Username: "foo", Password: "bar"}
 	tokenStr, createdUser := createUserAndLogin(t, app, user)
@@ -40,7 +42,7 @@ func Test_users(t *testing.T) {
 			body:         editUser,
 		},
 		{
-			description:  "Delete one user (expect 200)",
+			description:  "Delete one user (expect 204)",
 			expectedCode: 204,
 			route:        "/api/users/" + createdUser.ID.Hex(),
 			method:       "DELETE",
