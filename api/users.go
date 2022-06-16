@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"github.com/PPSKSY-Cluster/backend/auth"
@@ -8,11 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func InitUserHandlers(userRouter fiber.Router) {
+func initUserHandlers(userRouter fiber.Router) {
 	userRouter.Post("/", userCreateHandler())
 
 	userRouter.Use(auth.CheckToken())
-	userRouter.Get("/", UserListHandler())
+	userRouter.Get("/", userListHandler())
 	userRouter.Get("/:id", userDetailHandler())
 	userRouter.Put("/:id", userUpdateHandler())
 	userRouter.Delete("/:id", userDeleteHandler())
@@ -26,7 +26,7 @@ func InitUserHandlers(userRouter fiber.Router) {
 // @Success      200  {array}  db.User
 // @Failure	     500
 // @Router       /api/users/ [get]
-func UserListHandler() func(*fiber.Ctx) error {
+func userListHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		users, err := db.GetAllUsers()
 		if err != nil {

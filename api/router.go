@@ -1,11 +1,10 @@
-package main
+package api
 
 import (
 	"os"
 
 	"github.com/PPSKSY-Cluster/backend/auth"
 	_ "github.com/PPSKSY-Cluster/backend/docs"
-	"github.com/PPSKSY-Cluster/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -33,10 +32,10 @@ func InitRouter() (*fiber.App, error) {
 	api.Post("/login", loginHandler())
 
 	userRoutes := api.Group("/users")
-	handlers.InitUserHandlers(userRoutes)
+	initUserHandlers(userRoutes)
 
 	cResourceRoutes := api.Group("/cresources")
-	handlers.InitCResourceHandlers(cResourceRoutes)
+	initCResourceHandlers(cResourceRoutes)
 
 	return router, nil
 }
