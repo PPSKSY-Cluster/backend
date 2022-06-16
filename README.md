@@ -24,10 +24,11 @@ go build -o ./build/server main.go router.go
 
 To run tests execute
 ```
-go test -v ./...
+go test -v ./tests -tags test
 ```
 -v for verbosity
-./... to test all subdirectories
+./tests because that's the directory where they live
+-tags test because the ability to drop the entire database is only compiled for testing
 
 ## Docs
 
