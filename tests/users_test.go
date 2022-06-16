@@ -13,7 +13,9 @@ func Test_users(t *testing.T) {
 	}
 
 	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user)
+
+	editUser := db.User{Username: "bar"}
 
 	tests := []TestReq{
 		{
@@ -21,6 +23,27 @@ func Test_users(t *testing.T) {
 			expectedCode: 200,
 			route:        "/api/users/",
 			method:       "GET",
+			body:         nil,
+		},
+		{
+			description:  "Get one user (expect 200)",
+			expectedCode: 200,
+			route:        "/api/users/" + createdUser.ID.Hex(),
+			method:       "GET",
+			body:         nil,
+		},
+		{
+			description:  "Edit one user (expect 200)",
+			expectedCode: 200,
+			route:        "/api/users/" + createdUser.ID.Hex(),
+			method:       "PUT",
+			body:         editUser,
+		},
+		{
+			description:  "Delete one user (expect 200)",
+			expectedCode: 204,
+			route:        "/api/users/" + createdUser.ID.Hex(),
+			method:       "DELETE",
 			body:         nil,
 		},
 	}

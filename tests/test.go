@@ -44,7 +44,7 @@ type TestReq struct{
 
 // the provided user will be created, logged in 
 // and the jwt token will be returned
-func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) string {
+func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string, db.User) {
 	createReq := TestReq{
 		description:  "Create one user (expect 201)",
 		expectedCode: 201,
@@ -53,7 +53,7 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) string 
 		body:         user,
 	}
 
-	executeTestReq[db.User](t, app, createReq, "")
+	createdUser := executeTestReq[db.User](t, app, createReq, "")
 
 	loginReq := TestReq{
 		description:  "Login the previously created user (expect 200)",
@@ -70,7 +70,7 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) string 
 	token := executeTestReq[TokenRes](t, app, loginReq, "")
 	bearerStr := "Bearer " + token.Token
 	
-	return bearerStr
+	return bearerStr, createdUser
 }
 
 // executes a test request with the given params and 
