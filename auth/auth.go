@@ -13,30 +13,41 @@ import (
 )
 
 // Helper to generate a JWT token on login
-func CheckCredentials(username, password string) (string, error) {
-	user, err := db.GetUserCredentials(username)
+func CheckCredentials() func(username, password string) (string, error) {
+	privKeyPem, err := readKeyFromFile(os.Getenv("PRIV_KEY_PATH"))
 	if err != nil {
-		return "", err
+		panic(err.Error())
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	privKey, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(privKeyPem, os.Getenv("PRIVATE_PEM_PW"))
 	if err != nil {
-		return "", err
+		panic(err.Error())
 	}
 
-	token := jwt.New(jwt.SigningMethodHS256)
+	return func(username, password string) (string, error) {
+		user, err := db.GetUserCredentials(username)
+		if err != nil {
+			return "", err
+		}
 
-	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = username
-	claims["admin"] = true
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+		if err != nil {
+			return "", err
+		}
 
-	t, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return "", err
+		token := jwt.New(jwt.SigningMethodRS256)
+
+		claims := token.Claims.(jwt.MapClaims)
+		claims["username"] = username
+		claims["admin"] = true
+		claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
+		t, err := token.SignedString(privKey)
+		if err != nil {
+			return "", err
+		}
+
+		return t, nil
 	}
-
-	return t, nil
 }
 
 // Helper to generate the hashed password on user creation
@@ -56,6 +67,16 @@ func HashPW(password string) (string, error) {
 
 // Middleware that checks if the user is authenticated
 func CheckToken() func(c *fiber.Ctx) error {
+	pubKeyPem, err := readKeyFromFile(os.Getenv("PUB_KEY_PATH"))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKeyPem)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return func(c *fiber.Ctx) error {
 		token := c.Get("Authorization")
 		token = strings.Replace(token, "Bearer ", "", 1)
@@ -63,12 +84,8 @@ func CheckToken() func(c *fiber.Ctx) error {
 			return c.SendStatus(401)
 		}
 
-		_, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fiber.ErrUnauthorized
-			}
-
-			return []byte("secret"), nil
+		_, err = jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return pubKey, nil
 		})
 
 		if err != nil {
@@ -77,4 +94,21 @@ func CheckToken() func(c *fiber.Ctx) error {
 
 		return c.Next()
 	}
+}
+
+func readKeyFromFile(path string) ([]byte, error) {
+	finfo, err := os.Lstat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	key := make([]byte, finfo.Size())
+	keyF, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer keyF.Close()
+
+	keyF.Read(key)
+	return key, nil
 }
