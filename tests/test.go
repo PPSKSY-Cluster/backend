@@ -82,7 +82,7 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string
 // returns the unmarshaled response body for the given type T
 // if you don't need authentication leave bearerToken empty
 func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bearerToken string) T{
-	fmt.Printf("\n\t%s\n", test.description)
+	fmt.Printf("\n%s\n\t", test.description)
 
 	// io reader from body
 	bodyBytes, _ := json.Marshal(test.body)
