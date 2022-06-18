@@ -11,34 +11,34 @@ import (
 type CResourceType int64
 
 const (
-	customRT CResourceType = -1
-	noneRT   CResourceType = 0
-	gpuRT    CResourceType = 1
+	CustomRT CResourceType = -1
+	NoneRT   CResourceType = 0
+	GpuRT    CResourceType = 1
 )
 
 type LoadBalancing int64
 
 const (
-	customLB     LoadBalancing = -1
-	noneLB       LoadBalancing = 0
-	roundRobinLB LoadBalancing = 1
+	CustomLB     LoadBalancing = -1
+	NoneLB       LoadBalancing = 0
+	RoundRobinLB LoadBalancing = 1
 )
 
 type OSType int64
 
 const (
-	linuxOS   OSType = 1
-	windowsOS OSType = 2
-	macOS     OSType = 3
+	LinuxOS   OSType = 1
+	WindowsOS OSType = 2
+	MacOS     OSType = 3
 )
 
 type CResource struct {
 	ID                       primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name                     string               `bson:"name" json:"name"`
 	Description              string               `bson:"description" json:"description"`
-	Nodes                    []int64              `bson:"nodes" json:"nodes"`
+	Nodes                    int64                `bson:"nodes" json:"nodes"`
 	Type                     CResourceType        `bson:"type" json:"type"`
-	Admins                   []User               `bson:"admins" json:"admins"`
+	Admins                   []primitive.ObjectID `bson:"admins" json:"admins"`
 	BalancingAlg             LoadBalancing        `bson:"balancingAlg" json:"balancingAlg"`
 	Reservations             []primitive.ObjectID `bson:"reservations" json:"reservations"`
 	HighAvailability         bool                 `bson:"highAvailability" json:"highAvailability"`                 // HA
