@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"github.com/PPSKSY-Cluster/backend/auth"
@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func InitUserHandlers(userRouter fiber.Router) {
+func initUserHandlers(userRouter fiber.Router) {
 	userRouter.Post("/", userCreateHandler())
 
 	userRouter.Use(auth.CheckToken())

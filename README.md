@@ -13,13 +13,22 @@ Authentication/authorization is done using jwt and bcrypt.
 
 To run the server use the command
 ```
-go run main.go router.go
+go run main.go
 ```
 
 To compile it  run
 ```
-go build -o ./build/server main.go router.go
+go build -o ./build/server main.go
 ```
+-o to specify output directory
+
+To run tests execute
+```
+go test -v ./tests -tags test
+```
+-v for verbosity
+./tests because that's the directory where they live
+-tags test because the ability to drop the entire database is only compiled for testing
 
 ## Docs
 
@@ -41,3 +50,5 @@ Possible fields are :
 |PORT        | 8080                             | The port to start the server on          |
 |CLIENT_URL  | http://localhost:3000            | The URL the client is requesting from    |
 |BCRYPT_COST | 10                               | The Cost for bcrypt pw generation (>= 10)|
+
+For tests a seperate .env is needed in the corresponding folder `./tests`.

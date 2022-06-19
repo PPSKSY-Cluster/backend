@@ -2,4 +2,4 @@
 /build
 
 # environment variables as file
-/.env
+.env

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/PPSKSY-Cluster/backend/api"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/joho/godotenv"
 )
@@ -32,7 +33,7 @@ func run() error {
 		return err
 	}
 
-	router, err := InitRouter()
+	router, err := api.InitRouter()
 	if err != nil {
 		return err
 	}

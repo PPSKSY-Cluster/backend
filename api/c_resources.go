@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"github.com/PPSKSY-Cluster/backend/db"
@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func InitCResourceHandlers(cresourceRouter fiber.Router) {
+func initCResourceHandlers(cresourceRouter fiber.Router) {
 	cresourceRouter.Get("/", cResourceListHandler())
 	cresourceRouter.Get("/:id", cResourceDetailHandler())
 	cresourceRouter.Post("/", cResourceCreateHandler())
