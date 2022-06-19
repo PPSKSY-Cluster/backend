@@ -11,6 +11,11 @@ Authentication/authorization is done using jwt and bcrypt.
 
 ## Get started
 
+To just run the backend in docker use (make sure to change the mongo-uri before deployment as shown below)
+```
+docker-compose up
+```
+
 To run the server use the command
 ```
 go run main.go
@@ -43,12 +48,12 @@ swag init
 Currently all that is located in your .env in the root directory.
 Possible fields are :
 
-| key        | example value                    | description                              |
-|------------|----------------------------------|------------------------------------------|
-|DB_NAME     | test                             | The name of your database                |
-|MONGODB_URI | mongodb://localhost:27017/test   | The connection string to your database   |
-|PORT        | 8080                             | The port to start the server on          |
-|CLIENT_URL  | http://localhost:3000            | The URL the client is requesting from    |
-|BCRYPT_COST | 10                               | The Cost for bcrypt pw generation (>= 10)|
+| key        | example value                    | description                                                                                    |
+|------------|----------------------------------|------------------------------------------------------------------------------------------------|
+|DB_NAME     | test                             | The name of your database                                                                      |
+|MONGODB_URI | mongodb://localhost:27017/test   | The connection string to your database<br/>(change 'localhost' to 'mongo_db' when using docker) |
+|PORT        | 8080                             | The port to start the server on                                                                |
+|CLIENT_URL  | http://localhost:3000            | The URL the client is requesting from                                                          |
+|BCRYPT_COST | 10                               | The Cost for bcrypt pw generation (>= 10)                                                      |
 
 For tests a seperate .env is needed in the corresponding folder `./tests`.
