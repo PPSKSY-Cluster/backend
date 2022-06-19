@@ -11,10 +11,11 @@ Authentication/authorization is done using jwt and bcrypt.
 
 ## Get started
 
-To just run the backend in docker use (make sure to change the mongo-uri before deployment as shown below)
+To just run the backend in docker use
 ```
 docker-compose up
 ```
+Make sure that you adapt your .env as described below
 
 To run the server use the command
 ```
