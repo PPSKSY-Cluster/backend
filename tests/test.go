@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/PPSKSY-Cluster/backend/api"
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -23,7 +24,12 @@ func setupTestApplication() (*fiber.App, error) {
 	if err := godotenv.Load("./.env"); err != nil {
 		return nil, err
 	}
+
 	if err := db.InitDB(); err != nil {
+		return nil, err
+	}
+
+	if err := auth.InitAuth(); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +41,7 @@ func setupTestApplication() (*fiber.App, error) {
 	return app, nil
 }
 
-type TestReq struct{
+type TestReq struct {
 	description  string
 	expectedCode int
 	route        string
@@ -44,7 +50,7 @@ type TestReq struct{
 	expectedData interface{}
 }
 
-// the provided user will be created, logged in 
+// the provided user will be created, logged in
 // and the jwt token will be returned
 func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string, db.User) {
 	expectUser := user
@@ -74,14 +80,14 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string
 
 	token := executeTestReq[TokenRes](t, app, loginReq, "")
 	bearerStr := "Bearer " + token.Token
-	
+
 	return bearerStr, createdUser
 }
 
-// executes a test request with the given params and 
+// executes a test request with the given params and
 // returns the unmarshaled response body for the given type T
 // if you don't need authentication leave bearerToken empty
-func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bearerToken string) T{
+func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bearerToken string) T {
 	fmt.Printf("\n%s\n\t", test.description)
 
 	// io reader from body
@@ -101,7 +107,7 @@ func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bear
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// test result
 	assert.Equalf(t, test.expectedCode, res.StatusCode, test.description)
 
@@ -130,7 +136,7 @@ func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 
 	switch expectedV.Type().Kind() {
 	case reflect.Slice:
-		compareSlice(t,	expectedV, dataV)
+		compareSlice(t, expectedV, dataV)
 	case reflect.Struct:
 		compareStruct(t, expectedV, dataV)
 	}
@@ -138,7 +144,7 @@ func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 
 func compareSlice(t assert.TestingT, expected reflect.Value, actual reflect.Value) {
 	for i := 0; i < expected.Len(); i++ {
-		compareStruct(t,expected.Index(i), actual.Index(i))
+		compareStruct(t, expected.Index(i), actual.Index(i))
 	}
 }
 

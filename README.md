@@ -52,9 +52,10 @@ Possible fields are :
 | key        | example value                    | description                                                                                    |
 |------------|----------------------------------|------------------------------------------------------------------------------------------------|
 |DB_NAME     | test                             | The name of your database                                                                      |
-|MONGODB_URI | mongodb://localhost:27017/test   | The connection string to your database<br/>(change 'localhost' to 'mongo_db' when using docker) |
+|MONGODB_URI | mongodb://localhost:27017/test   | The connection string to your database<br/>(change 'localhost' to 'mongo_db' when using docker)|
 |PORT        | 8080                             | The port to start the server on                                                                |
 |CLIENT_URL  | http://localhost:3000            | The URL the client is requesting from                                                          |
 |BCRYPT_COST | 10                               | The Cost for bcrypt pw generation (>= 10)                                                      |
+|RSA_KEY_SIZE| 2048                             | The key size used when generating rsa key pairs        |
 
 For tests a seperate .env is needed in the corresponding folder `./tests`.

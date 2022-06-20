@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/PPSKSY-Cluster/backend/api"
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/joho/godotenv"
 )
@@ -23,13 +24,15 @@ func main() {
 }
 
 func run() error {
-	err := godotenv.Load("./.env")
-	if err != nil {
+	if err := godotenv.Load("./.env"); err != nil {
 		return err
 	}
 
-	err = db.InitDB()
-	if err != nil {
+	if err := db.InitDB(); err != nil {
+		return err
+	}
+
+	if err := auth.InitAuth(); err != nil {
 		return err
 	}
 
