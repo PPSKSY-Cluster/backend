@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+
+  mongo_db:
+    container_name: mongo_db
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - thruster-network
+  cluster-thruster:
+    container_name: cluster-thruster
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cluster-thruster:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo_db
+    networks:
+      - thruster-network
+
+networks:
+  thruster-network:
+    driver: bridge
