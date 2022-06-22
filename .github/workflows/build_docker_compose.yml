@@ -1,0 +1,34 @@
+# workflow to build the server using docker-compose
+name: build
+on: 
+  push:
+    branches:
+      - 'main'
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install docker-compose
+        run: sudo apt update && sudo apt install -y --no-install-recommends docker-compose
+      
+      - name: create build env file
+        run: |
+          touch .env
+          echo DB_NAME=test >> .env
+          echo MONGODB_URI=mongodb://mongo_db:27017/test >> .env
+          echo PORT=8080 >> .env
+          echo CLIENT_URL=http://localhost:3000 >> .env
+          echo BCRYPT_COST=10 >> .env
+          echo RSA_KEY_SIZE=2048 >> .env
+
+      - name: docker-compose
+        run: |
+          docker-compose up -d
+          docker-compose kill
