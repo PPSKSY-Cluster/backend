@@ -20,7 +20,7 @@ func initCResourceHandlers(cresourceRouter fiber.Router) {
 // @Description  Get all cluster resources
 // @Tags         cluster-resources
 // @Produce      json
-// @Success      200  {array}  CResource
+// @Success      200  {array}  db.CResource
 // @Failure		 500
 // @Router       /api/cresources/ [get]
 func cResourceListHandler() func(c *fiber.Ctx) error {
@@ -39,7 +39,7 @@ func cResourceListHandler() func(c *fiber.Ctx) error {
 // @Tags         cluster-resources
 // @Produce      json
 // @Param        id   path      string  true  "CResource ID"
-// @Success      200  {object}  CResource
+// @Success      200  {object}  db.CResource
 // @Failure 	 404
 // @Router       /api/cresources/{id} [get]
 func cResourceDetailHandler() func(c *fiber.Ctx) error {
@@ -64,7 +64,7 @@ func cResourceDetailHandler() func(c *fiber.Ctx) error {
 // @Tags         cluster-resources
 // @Accept       json
 // @Produce      json
-// @Success      201  {object}  CResource
+// @Success      201  {object}  db.CResource
 // @Failure      500  {object}  string
 // @Router       /api/cresources/ [post]
 func cResourceCreateHandler() func(c *fiber.Ctx) error {
@@ -91,7 +91,7 @@ func cResourceCreateHandler() func(c *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "CResource ID"
-// @Success      200  {object}  CResource
+// @Success      200  {object}  db.CResource
 // @Failure      500
 // @Router       /api/cresources/{id} [put]
 func cResourceUpdateHandler() func(c *fiber.Ctx) error {
