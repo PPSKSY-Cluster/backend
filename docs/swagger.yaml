@@ -1,5 +1,36 @@
 basePath: /
 definitions:
+  db.CResource:
+    properties:
+      _id:
+        type: string
+      admins:
+        items:
+          type: string
+        type: array
+      balancingAlg:
+        type: integer
+      description:
+        type: string
+      highAvailability:
+        description: HA
+        type: boolean
+      highPerformanceComputing:
+        description: HPC
+        type: boolean
+      name:
+        type: string
+      nodes:
+        type: integer
+      operatingSystem:
+        type: integer
+      reservations:
+        items:
+          type: string
+        type: array
+      type:
+        type: integer
+    type: object
   db.User:
     properties:
       _id:
@@ -10,11 +41,6 @@ definitions:
         type: string
     required:
     - username
-    type: object
-  handlers.CResource:
-    properties:
-      _id:
-        type: string
     type: object
 host: localhost:8080
 info:
@@ -35,8 +61,10 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/handlers.CResource'
+              $ref: '#/definitions/db.CResource'
             type: array
+        "500":
+          description: ""
       tags:
       - cluster-resources
     post:
@@ -49,7 +77,11 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlers.CResource'
+            $ref: '#/definitions/db.CResource'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       tags:
       - cluster-resources
   /api/cresources/{id}:
@@ -63,6 +95,8 @@ paths:
         type: string
       responses:
         "204":
+          description: ""
+        "500":
           description: ""
       tags:
       - cluster-resources
@@ -80,7 +114,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.CResource'
+            $ref: '#/definitions/db.CResource'
+        "404":
+          description: ""
       tags:
       - cluster-resources
     put:
@@ -99,7 +135,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.CResource'
+            $ref: '#/definitions/db.CResource'
+        "500":
+          description: ""
       tags:
       - cluster-resources
   /api/docs/:

@@ -34,9 +34,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.CResource"
+                                "$ref": "#/definitions/db.CResource"
                             }
                         }
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             },
@@ -55,7 +58,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handlers.CResource"
+                            "$ref": "#/definitions/db.CResource"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -83,8 +92,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.CResource"
+                            "$ref": "#/definitions/db.CResource"
                         }
+                    },
+                    "404": {
+                        "description": ""
                     }
                 }
             },
@@ -112,8 +124,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.CResource"
+                            "$ref": "#/definitions/db.CResource"
                         }
+                    },
+                    "500": {
+                        "description": ""
                     }
                 }
             },
@@ -133,6 +148,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
+                        "description": ""
+                    },
+                    "500": {
                         "description": ""
                     }
                 }
@@ -369,6 +387,52 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "db.CResource": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "balancingAlg": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "highAvailability": {
+                    "description": "HA",
+                    "type": "boolean"
+                },
+                "highPerformanceComputing": {
+                    "description": "HPC",
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "nodes": {
+                    "type": "integer"
+                },
+                "operatingSystem": {
+                    "type": "integer"
+                },
+                "reservations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
         "db.User": {
             "type": "object",
             "required": [
@@ -382,14 +446,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 20,
                     "minLength": 3
-                }
-            }
-        },
-        "handlers.CResource": {
-            "type": "object",
-            "properties": {
-                "_id": {
-                    "type": "string"
                 }
             }
         }
