@@ -62,7 +62,7 @@ jobs:
           sed -i "s|src=\"./|src=\"dist/|g" $TARGET/index.html
           
           # Update current release
-          echo ${{ steps.swagger-ui.outputs.release_tag }} > swagger-ui.version
+          echo ${{ steps.swagger-ui.outputs.release_tag }} > $TARGET/swagger-ui.version
 
       - name: Fix petstore.json reference in swagger-initalizer.js
         if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
