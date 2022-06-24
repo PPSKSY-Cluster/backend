@@ -6,6 +6,8 @@ on: push                                                                        
 jobs:
   updateSwagger:
     runs-on: ubuntu-latest
+    env:
+      TARGET: "pages"
     steps:
       - uses: actions/checkout@v3
       
@@ -30,10 +32,10 @@ jobs:
           echo ::set-output name=current_tag::$(<swagger-ui.version)
 
       - name: Update Swagger UI
+        if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
         env:
           RELEASE_TAG: ${{ steps.swagger-ui.outputs.release_tag }}
-          SWAGGER_YAML: "/docs/swagger.yaml"
-          TARGET: "pages"
+          SWAGGER_YAML: "./docs/swagger.yaml"
         run: |
           # Create target if not existing
           mkdir -p $TARGET
@@ -61,6 +63,28 @@ jobs:
           
           # Update current release
           echo ${{ steps.swagger-ui.outputs.release_tag }} > swagger-ui.version
+
+      - name: Fix petstore.json reference in swagger-initalizer.js
+        if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
+        env:
+          SWAGGER_JSON: "./docs/swagger.json"
+        run: |
+          # create spec.js in $TARGET
+          touch  $TARGET/spec.js
+          echo "var spec = " >> $TARGET/spec.js
+
+          # pipe $SWAGGER_JSON content to spec.js
+          spec=$(cat $SWAGGER_JSON | sed 's/\//\\\//g')
+          echo $spec >> $TARGET/spec.js
+
+          # insert load statement for spec.js in index.html
+          loadStatement="""    \<script src\=\'spec.js\' type=\"text\/javascript\"\>\<\/script\> """
+          sed -i "18s/.*/$loadStatement \n \<\/body\> /" $TARGET/index.html
+
+          # replace url with spec in SwaggerUIBundle({...})
+          specStatement="    spec: spec,"
+          sed -i "6s/.*/$specStatement /" $TARGET/dist/swagger-initializer.js
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
