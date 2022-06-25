@@ -85,6 +85,16 @@ jobs:
           specStatement="    spec: spec,"
           sed -i "6s/.*/$specStatement /" $TARGET/dist/swagger-initializer.js
 
+      - name: cleanup for gh-pages
+        run: |
+          # remove everything but hidden files and $TARGET
+          shopt -s extglob
+          rm -r ./!($TARGET)
+
+          # extract the pages content
+          mv $TARGET/* .
+          rmdir $TARGET
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
