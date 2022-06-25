@@ -4,7 +4,9 @@
 # code is based off : https://github.com/peter-evans/swagger-github-pages
 # and utilizes      : https://github.com/peter-evans/create-pull-request
 name: update github pages
-on: push
+on:
+  schedule:
+    - cron:  '0 0 * * 0' # runs sunday at midnight UTC
 jobs:
   updateSwagger:
     runs-on: ubuntu-latest
