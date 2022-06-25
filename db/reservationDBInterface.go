@@ -18,7 +18,6 @@ type Reservation struct {
 	IsExpired bool               `bson:"isExpired" json:"isExpired"`
 }
 
-//TODO: Check whether or not reservations are expired!
 func GetAllReservations() ([]Reservation, error) {
 
 	query := func() (*mongo.Cursor, error) {
@@ -137,7 +136,6 @@ func AddReservation(reservation Reservation) (Reservation, error) {
 			InsertOne(mdbInstance.Ctx, reservation)
 	}
 
-	//TODO:Find out what Validate actually does here/if its usable for reservations
 	if err := mdbInstance.Validate.Struct(reservation); err != nil {
 		return Reservation{}, err
 	}

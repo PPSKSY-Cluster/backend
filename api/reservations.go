@@ -1,0 +1,200 @@
+package api
+
+import (
+	"github.com/PPSKSY-Cluster/backend/db"
+	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+func initReservationHandlers(reservationRouter fiber.Router) {
+	reservationRouter.Get("/", reservationListHandler())
+	reservationRouter.Get("/:id", reservationDetailHandler())
+	reservationRouter.Get("/?uId", reservationUserHandler())
+	reservationRouter.Get("/?cId", reservationClusterHandler())
+	reservationRouter.Post("/", reservationCreateHandler())
+	reservationRouter.Put("/:id", reservationUpdateHandler())
+	reservationRouter.Delete("/:id", reservationDeleteHandler())
+
+	return
+}
+
+// @Description	Get all Reservations
+// @Tags		reservations
+// @Produce		json
+// @Success		200 {array} Reservation
+// @Failure		404 {object} string
+// @Router		/api/reservations/ [get]
+func reservationListHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		reservations, err := db.GetAllReservations()
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		c.JSON(reservations)
+		return c.SendStatus(200)
+	}
+}
+
+// @Description	Get reservation by ID
+// @Tags		reservations
+// @Produce		json
+// @Param 		id path string true "Reservation ID"
+// @Success		200 {object} Reservation
+// @Failure		400 {object} string
+// @Failure		404 {object} string
+// @Router		/api/reservations/{id} [get]
+func reservationDetailHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
+		}
+
+		reservation, err := db.GetReservationById(id)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		c.JSON(reservation)
+		return c.SendStatus(200)
+	}
+}
+
+// @Description	Get reservation by userId
+// @Tags		reservations
+// @Produce		json
+// @Param 		uId path string true "Reservation ID"
+// @Success		200 {array} Reservation
+// @Failure		400 {object} string
+// @Failure		404 {object} string
+// @Router		/api/reservations/{uId} [get]
+func reservationUserHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		idStr := c.Params("uId")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
+		}
+
+		reservations, err := db.GetReservationsByUserId(id)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		c.JSON(reservations)
+		return c.SendStatus(200)
+	}
+}
+
+// @Description	Get reservation by clusterID
+// @Tags		reservations
+// @Produce		json
+// @Param 		cId path string true "Reservation ID"
+// @Success		200 {array} Reservation
+// @Failure		400 {object} string
+// @Failure		404 {object} string
+// @Router		/api/reservations/{cId} [get]
+func reservationClusterHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		idStr := c.Params("cId")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
+		}
+
+		reservations, err := db.GetReservationsByClusterId(id)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		c.JSON(reservations)
+		return c.SendStatus(200)
+	}
+}
+
+// @Description  Create reservations
+// @Tags         reservations
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  Reservation
+// @Failure      500  {object}  string
+// @Router       /api/reservations/ [post]
+func reservationCreateHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		r := new(db.Reservation)
+		if err := c.BodyParser(r); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		reservation, err := db.AddReservation(*r)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		c.JSON(reservation)
+		return c.SendStatus(201)
+	}
+}
+
+// @Description  Update Reservation
+// @Tags         reservations
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Reservation ID"
+// @Success      200  {object}  Reservation
+// @Failure		 400  {object}  string
+// @Failure      500  {object}  string
+// @Router       /api/reservations/{id} [put]
+func reservationUpdateHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		r := new(db.Reservation)
+		if err := c.BodyParser(r); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		reservation, err := db.EditReservation(id, *r)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		reservation.ID = id
+		c.JSON(reservation)
+		return c.SendStatus(200)
+	}
+}
+
+// @Description  Delete reservations
+// @Tags         reservations
+// @Param        id   path      string  true  "Reservation ID"
+// @Success      204
+// @Failure      400  {object}  string
+// @Failure		 404  {object}  string
+// @Router       /api/reservations/{id} [delete]
+func reservationDeleteHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
+		}
+
+		err = db.DeleteReservation(id)
+		if err != nil {
+			fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		return c.SendStatus(204)
+	}
+}
