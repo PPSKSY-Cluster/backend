@@ -20,9 +20,11 @@ const (
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
-	Password string             `bson:"password" json:"-"`
+	Password string             `bson:"password" json:"password"`
 	Type     UserType           `bson:"type" json:"-"`
 }
+
+var userDefaultProjection = bson.M{"password": 0}
 
 func GetAllUsers() ([]User, error) {
 
@@ -30,7 +32,7 @@ func GetAllUsers() ([]User, error) {
 		return mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
-			Find(mdbInstance.Ctx, bson.M{})
+			Find(mdbInstance.Ctx, bson.M{}, options.Find().SetProjection(userDefaultProjection))
 	}
 
 	usersCursor, err := runQuery[*mongo.Cursor](query)
@@ -52,7 +54,7 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 		singleRes := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
-			FindOne(mdbInstance.Ctx, bson.M{"_id": _id})
+			FindOne(mdbInstance.Ctx, bson.M{"_id": _id}, options.FindOne().SetProjection(userDefaultProjection))
 		return singleRes, singleRes.Err()
 	}
 
@@ -110,6 +112,7 @@ func AddUser(user User) (User, error) {
 	}
 
 	user.ID = insertRes.InsertedID.(primitive.ObjectID)
+	user.Password = ""
 
 	return user, nil
 }
@@ -127,6 +130,7 @@ func EditUser(_id primitive.ObjectID, user User) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
+	user.Password = ""
 
 	return user, nil
 }
