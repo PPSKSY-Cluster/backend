@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -21,13 +20,13 @@ func initCResourceHandlers(cresourceRouter fiber.Router) {
 // @Tags         cluster-resources
 // @Produce      json
 // @Success      200  {array}  db.CResource
-// @Failure		 500
+// @Failure		 404  {object} string
 // @Router       /api/cresources/ [get]
 func cResourceListHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		cResources, err := db.GetAllCResources()
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
 		c.JSON(cResources)
@@ -40,19 +39,21 @@ func cResourceListHandler() func(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        id   path      string  true  "CResource ID"
 // @Success      200  {object}  db.CResource
-// @Failure 	 404
+// @Failure      400  {object}  string
+// @Failure 	 404  {object}  string
 // @Router       /api/cresources/{id} [get]
 func cResourceDetailHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
 		}
 
 		cResource, err := db.GetCResourceById(id)
 		if err != nil {
-			return c.SendStatus(404)
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
 		c.JSON(cResource)
@@ -65,20 +66,19 @@ func cResourceDetailHandler() func(c *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Success      201  {object}  db.CResource
-// @Failure      500  {object}  string
+// @Failure      400  {object}  string
+// @Failure 	 404  {object}  string
 // @Router       /api/cresources/ [post]
 func cResourceCreateHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		cr := new(db.CResource)
 		if err := c.BodyParser(cr); err != nil {
-			c.JSON(bson.M{"error": err.Error()})
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		cResource, err := db.AddCResource(*cr)
 		if err != nil {
-			c.JSON(bson.M{"error": err.Error()})
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
 		c.JSON(cResource)
@@ -92,24 +92,26 @@ func cResourceCreateHandler() func(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        id   path      string  true  "CResource ID"
 // @Success      200  {object}  db.CResource
-// @Failure      500
+// @Failure      400  {object}  string
+// @Failure 	 404  {object}  string
 // @Router       /api/cresources/{id} [put]
 func cResourceUpdateHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		cr := new(db.CResource)
 		if err := c.BodyParser(cr); err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
 		}
 
 		cResource, err := db.EditCResource(id, *cr)
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
 		cResource.ID = id
@@ -129,12 +131,13 @@ func cResourceDeleteHandler() func(c *fiber.Ctx) error {
 		idStr := c.Params("id")
 		id, err := primitive.ObjectIDFromHex(idStr)
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest,
+				"Could not convert given object ID, did you use the right ID-format?")
 		}
 
 		err = db.DeleteCResource(id)
 		if err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
 		return c.SendStatus(204)
