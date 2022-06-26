@@ -2,11 +2,12 @@ package tests
 
 import (
 	"fmt"
-	"github.com/PPSKSY-Cluster/backend/db"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/PPSKSY-Cluster/backend/db"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func Test_reservations(t *testing.T) {
@@ -117,7 +118,7 @@ func Test_reservations(t *testing.T) {
 	executeTestReq[db.Reservation](t, app, deleteOneTest, tokenStr)
 
 	expiredAddTest := TestReq{
-		description:  "Add one already expired reservation (expect 200)",
+		description:  "Add one already expired reservation (expect 201)",
 		expectedCode: 201,
 		route:        "/api/reservations/",
 		method:       "POST",
