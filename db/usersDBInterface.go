@@ -9,10 +9,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type UserType int
+
+const (
+	user       UserType = 0
+	admin      UserType = 1
+	superAdmin UserType = 2
+)
+
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
 	Password string             `bson:"password" json:"-"`
+	Type     UserType           `bson:"type" json:"-"`
 }
 
 func GetAllUsers() ([]User, error) {
