@@ -1,7 +1,9 @@
 # workflow to update the swagger ui on github pages
+# it will try to merge the directory specified by env variable
+# target into gh-pages branch with a PR
 # code is based off : https://github.com/peter-evans/swagger-github-pages
 # and utilizes      : https://github.com/peter-evans/create-pull-request
-name: Update Swagger UI
+name: update github pages
 on:
   schedule:
     - cron:  '0 0 * * 0' # runs sunday at midnight UTC
@@ -15,7 +17,7 @@ jobs:
       
       - name: Re-init swag.yaml
         run: |
-          # precompiled swag binary
+          # get the precompiled swag binary
           wget https://github.com/swaggo/swag/releases/download/v1.8.3/swag_1.8.3_Linux_x86_64.tar.gz
           mkdir swag
           tar -zxvf swag_1.8.3_Linux_x86_64.tar.gz -C swag
@@ -31,10 +33,9 @@ jobs:
         id: swagger-ui
         run: |
           echo ::set-output name=release_tag::$(curl -sL https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r ".tag_name")
-          echo ::set-output name=current_tag::$(<swagger-ui.version)
+          echo ::set-output name=current_tag::$(<$TARGET/swagger-ui.version)
 
-      - name: Update Swagger UI
-        if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
+      - name: Get Latest Swagger UI (html, js, css etc.)
         env:
           RELEASE_TAG: ${{ steps.swagger-ui.outputs.release_tag }}
           SWAGGER_YAML: "./docs/swagger.yaml"
@@ -67,7 +68,6 @@ jobs:
           echo ${{ steps.swagger-ui.outputs.release_tag }} > $TARGET/swagger-ui.version
 
       - name: Fix petstore.json reference in swagger-initalizer.js
-        if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
         env:
           SWAGGER_JSON: "./docs/swagger.json"
         run: |
@@ -87,6 +87,16 @@ jobs:
           specStatement="    spec: spec,"
           sed -i "6s/.*/$specStatement /" $TARGET/dist/swagger-initializer.js
 
+      - name: cleanup for gh-pages
+        run: |
+          # remove everything but hidden files and $TARGET
+          shopt -s extglob
+          rm -r ./!($TARGET)
+
+          # extract the pages content
+          mv $TARGET/* .
+          rmdir $TARGET
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
@@ -98,4 +108,6 @@ jobs:
             [1]: https://github.com/swagger-api/swagger-ui
             [2]: https://github.com/peter-evans/create-pull-request
           labels: dependencies, automated pr
-          branch: swagger-ui-updates
+          branch: gh-pages-ui-updates
+          delete-branch: true
+          base: gh-pages
