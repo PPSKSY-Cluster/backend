@@ -71,7 +71,6 @@ func userDetailHandler() func(*fiber.Ctx) error {
 // @Success      201  {object}  db.User
 // @Failure      400  {object}  string
 // @Failure      500  {object}  string
-// @Failure      404  {object}  string
 // @Router       /api/users/ [post]
 func userCreateHandler() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
@@ -88,7 +87,7 @@ func userCreateHandler() func(*fiber.Ctx) error {
 
 		user, err := db.AddUser(*u)
 		if err != nil {
-			return fiber.NewError(fiber.StatusNotFound, err.Error())
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
 		c.JSON(user)
