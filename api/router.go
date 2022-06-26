@@ -37,6 +37,9 @@ func InitRouter() (*fiber.App, error) {
 	cResourceRoutes := api.Group("/cresources")
 	initCResourceHandlers(cResourceRoutes)
 
+	reservationRoutes := api.Group("/reservations")
+	initReservationHandlers(reservationRoutes)
+
 	return router, nil
 }
 
