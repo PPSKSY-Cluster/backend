@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,7 +15,6 @@ type MDB struct {
 	Client     mongo.Client
 	Ctx        context.Context
 	CancelFunc context.CancelFunc
-	Validate   *validator.Validate
 }
 
 var mdbInstance MDB
@@ -25,8 +23,6 @@ func InitDB() error {
 	fmt.Println("Connecting to mongodb")
 
 	var mdb MDB
-
-	mdb.Validate = validator.New()
 
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
@@ -48,7 +44,7 @@ func InitDB() error {
 
 	mdbInstance = mdb
 
-	if err = setupIndexes(); err != nil {
+	if err = setupCollections(); err != nil {
 		return err
 	}
 
@@ -59,10 +55,22 @@ func runQuery[T any](f func() (T, error)) (T, error) {
 	return f()
 }
 
-func setupIndexes() error {
+func setupCollections() error {
+	// create unique index over username
 	if err := createIndex("users", "username", true); err != nil {
 		return err
 	}
+
+	// setup validation
+	singleRes := mdbInstance.Client.Database(os.Getenv("DB_NAME")).RunCommand(mdbInstance.Ctx, bson.D{
+		{Key: "collMod", Value: "users"},
+		{Key: "validator", Value: userValidator},
+		{Key: "validationLevel", Value: "strict"},
+	})
+	if singleRes != nil {
+		return singleRes.Err()
+	}
+
 	return nil
 }
 

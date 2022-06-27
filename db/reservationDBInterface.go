@@ -137,10 +137,6 @@ func AddReservation(reservation Reservation) (Reservation, error) {
 			InsertOne(mdbInstance.Ctx, reservation)
 	}
 
-	if err := mdbInstance.Validate.Struct(reservation); err != nil {
-		return Reservation{}, err
-	}
-
 	insertRes, err := runQuery[*mongo.InsertOneResult](query)
 	if err != nil {
 		return Reservation{}, err

@@ -81,10 +81,6 @@ func AddCResource(cResource CResource) (CResource, error) {
 			InsertOne(mdbInstance.Ctx, cResource)
 	}
 
-	if err := mdbInstance.Validate.Struct(cResource); err != nil {
-		return CResource{}, err
-	}
-
 	insertRes, err := runQuery[*mongo.InsertOneResult](query)
 	if err != nil {
 		return CResource{}, err
