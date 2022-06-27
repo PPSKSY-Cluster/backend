@@ -8,42 +8,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type CResourceType int64
+type OSType string
 
 const (
-	CustomRT CResourceType = -1
-	NoneRT   CResourceType = 0
-	GpuRT    CResourceType = 1
-)
-
-type LoadBalancing int64
-
-const (
-	CustomLB     LoadBalancing = -1
-	NoneLB       LoadBalancing = 0
-	RoundRobinLB LoadBalancing = 1
-)
-
-type OSType int64
-
-const (
-	LinuxOS   OSType = 1
-	WindowsOS OSType = 2
-	MacOS     OSType = 3
+	LinuxOS   OSType = "Linux"
+	WindowsOS OSType = "Windows"
+	MacOS     OSType = "MacOS"
 )
 
 type CResource struct {
-	ID                       primitive.ObjectID   `bson:"_id,omitempty" json:"_id,omitempty"`
-	Name                     string               `bson:"name" json:"name"`
-	Description              string               `bson:"description" json:"description"`
-	Nodes                    int64                `bson:"nodes" json:"nodes"`
-	Type                     CResourceType        `bson:"type" json:"type"`
-	Admins                   []primitive.ObjectID `bson:"admins" json:"admins"`
-	BalancingAlg             LoadBalancing        `bson:"balancingAlg" json:"balancingAlg"`
-	Reservations             []primitive.ObjectID `bson:"reservations" json:"reservations"`
-	HighAvailability         bool                 `bson:"highAvailability" json:"highAvailability"`                 // HA
-	HighPerformanceComputing bool                 `bson:"highPerformanceComputing" json:"highPerformanceComputing"` // HPC
-	OperatingSystem          OSType               `bson:"operatingSystem" json:"operatingSystem"`
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Owner           primitive.ObjectID `bson:"owner" json:"owner"`
+	Name            string             `bson:"name" json:"name"`
+	Description     string             `bson:"description" json:"description"`
+	OperatingSystem OSType             `bson:"operatingSystem" json:"operatingSystem"`
+	Nodes           int64              `bson:"nodes" json:"nodes"`
 }
 
 var collectionName = "cResources"
