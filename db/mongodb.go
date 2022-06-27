@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,10 +12,9 @@ import (
 )
 
 type MDB struct {
-	Client     mongo.Client
-	Ctx        context.Context
-	CancelFunc context.CancelFunc
-	Validate   *validator.Validate
+	Client   mongo.Client
+	Ctx      context.Context
+	Validate *validator.Validate
 }
 
 var mdbInstance MDB
@@ -34,7 +32,7 @@ func InitDB() error {
 	}
 	mdb.Client = *mongoClient
 
-	mdb.Ctx, mdb.CancelFunc = context.WithTimeout(context.Background(), 2000*time.Second)
+	mdb.Ctx = context.TODO()
 
 	err = mdb.Client.Connect(mdb.Ctx)
 	if err != nil {
