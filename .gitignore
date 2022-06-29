@@ -3,3 +3,7 @@
 
 # environment variables as file
 .env
+
+# rsa pem files
+/auth/private.pem
+/auth/public.pem

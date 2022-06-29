@@ -58,6 +58,8 @@ func loginHandler() func(c *fiber.Ctx) error {
 		Password string `json:"password"`
 	}
 
+	checkCredentialsF := auth.CheckCredentials()
+
 	return func(c *fiber.Ctx) error {
 		var login LoginPair
 
@@ -65,7 +67,7 @@ func loginHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		token, err := auth.CheckCredentials(login.Username, login.Password)
+		token, err := checkCredentialsF(login.Username, login.Password)
 		if err != nil {
 			return c.SendStatus(401)
 		}
