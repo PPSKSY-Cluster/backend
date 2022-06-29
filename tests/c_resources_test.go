@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/PPSKSY-Cluster/backend/db"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func Test_cresources(t *testing.T) {
@@ -23,16 +22,11 @@ func Test_cresources(t *testing.T) {
 	tokenStr, createdUser := createUserAndLogin(t, app, user)
 
 	fooscResource := db.CResource{
-		Name:                     "foos cresource",
-		Description:              "this is foos first cresource",
-		Nodes:                    2,
-		Type:                     db.CustomRT,
-		Admins:                   []primitive.ObjectID{createdUser.ID},
-		BalancingAlg:             db.CustomLB,
-		Reservations:             []primitive.ObjectID{},
-		HighAvailability:         false,
-		HighPerformanceComputing: false,
-		OperatingSystem:          db.LinuxOS,
+		Name:            "foos cresource",
+		Description:     "this is foos first cresource",
+		Nodes:           2,
+		OperatingSystem: db.LinuxOS,
+		Owner:           createdUser.ID,
 	}
 
 	// execute tests
