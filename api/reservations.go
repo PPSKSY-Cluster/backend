@@ -23,7 +23,7 @@ func initReservationHandlers(reservationRouter fiber.Router) {
 // @Description	Get all Reservations
 // @Tags		reservations
 // @Produce		json
-// @Success		200 {array} Reservation
+// @Success		200 {array} db.Reservation
 // @Failure		404 {object} string
 // @Router		/api/reservations/ [get]
 func reservationListHandler() func(c *fiber.Ctx) error {
@@ -42,7 +42,7 @@ func reservationListHandler() func(c *fiber.Ctx) error {
 // @Tags		reservations
 // @Produce		json
 // @Param 		id path string true "Reservation ID"
-// @Success		200 {object} Reservation
+// @Success		200 {object} db.Reservation
 // @Failure		400 {object} string
 // @Failure		404 {object} string
 // @Router		/api/reservations/{id} [get]
@@ -69,7 +69,7 @@ func reservationDetailHandler() func(c *fiber.Ctx) error {
 // @Tags		reservations
 // @Produce		json
 // @Param 		uId path string true "Reservation ID"
-// @Success		200 {array} Reservation
+// @Success		200 {array} db.Reservation
 // @Failure		400 {object} string
 // @Failure		404 {object} string
 // @Router		/api/reservations/{uId} [get]
@@ -96,7 +96,7 @@ func reservationUserHandler() func(c *fiber.Ctx) error {
 // @Tags		reservations
 // @Produce		json
 // @Param 		cId path string true "Reservation ID"
-// @Success		200 {array} Reservation
+// @Success		200 {array} db.Reservation
 // @Failure		400 {object} string
 // @Failure		404 {object} string
 // @Router		/api/reservations/{cId} [get]
@@ -123,7 +123,7 @@ func reservationClusterHandler() func(c *fiber.Ctx) error {
 // @Tags         reservations
 // @Accept       json
 // @Produce      json
-// @Success      201  {object}  Reservation
+// @Success      201  {object}  db.Reservation
 // @Failure      500  {object}  string
 // @Router       /api/reservations/ [post]
 func reservationCreateHandler() func(c *fiber.Ctx) error {
@@ -148,7 +148,7 @@ func reservationCreateHandler() func(c *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Reservation ID"
-// @Success      200  {object}  Reservation
+// @Success      200  {object}  db.Reservation
 // @Failure		 400  {object}  string
 // @Failure      500  {object}  string
 // @Router       /api/reservations/{id} [put]
