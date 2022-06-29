@@ -19,9 +19,28 @@ const (
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
+	Username string             `bson:"username" json:"username"`
 	Password string             `bson:"password" json:"password"`
 	Type     UserType           `bson:"type" json:"-"`
+}
+
+var userValidator = bson.D{
+	{Key: "$jsonSchema", Value: bson.D{
+		{Key: "bsonType", Value: "object"},
+		{Key: "required", Value: bson.A{"username"}},
+		{Key: "properties", Value: bson.D{
+			{Key: "username", Value: bson.D{
+				{Key: "bsonType", Value: "string"},
+				{Key: "pattern", Value: "^[a-zA-Z0-9]{3,20}$"},
+			}},
+			{Key: "password", Value: bson.D{
+				{Key: "bsonType", Value: "string"},
+			}},
+			{Key: "type", Value: bson.D{
+				{Key: "bsonType", Value: "number"},
+			}},
+		}},
+	}},
 }
 
 var userDefaultProjection = bson.M{"password": 0}
@@ -100,10 +119,6 @@ func AddUser(user User) (User, error) {
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
 			InsertOne(mdbInstance.Ctx, user)
-	}
-
-	if err := mdbInstance.Validate.Struct(user); err != nil {
-		return User{}, err
 	}
 
 	insertRes, err := runQuery[*mongo.InsertOneResult](query)
