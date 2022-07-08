@@ -89,7 +89,7 @@ func CheckToken() func(c *fiber.Ctx) error {
 
 		if err != nil {
 			c.JSON(bson.M{"Message": err.Error()})
-			c.SendStatus(401)
+			return c.SendStatus(401)
 		}
 
 		return c.Next()
