@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 )
 
@@ -17,9 +18,14 @@ func Test_cresources(t *testing.T) {
 	}
 	defer db.DropDB(os.Getenv("DB_NAME"))
 
-	// create user
-	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	// create user with admin rights
+	user := db.User{Username: "foo", Password: "bar", Type: db.AdminUT}
+
+	userWithHashPw := user
+	userWithHashPw.Password, _ = auth.HashPW(user.Password)
+
+	createdUser, _ := db.AddUserWithType(userWithHashPw)
+	tokenStr, _ := auth.CheckCredentials()(user.Username, user.Password)
 
 	fooscResource := db.CResource{
 		Name:            "foos cresource",
