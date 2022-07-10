@@ -12,16 +12,16 @@ import (
 type UserType int
 
 const (
-	user       UserType = 0
-	admin      UserType = 1
-	superAdmin UserType = 2
+	UserUT       UserType = 0
+	AdminUT      UserType = 1
+	SuperAdminUT UserType = 2
 )
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
 	Password string             `bson:"password,omitempty" json:"password,omitempty"`
-	Type     UserType           `bson:"type" json:"-"`
+	Type     UserType           `bson:"type" json:"type"`
 }
 
 var userDefaultProjection = bson.M{"password": 0}
@@ -94,6 +94,8 @@ func GetUserWithCredentials(username string) (User, error) {
 }
 
 func AddUser(user User) (User, error) {
+	user.Type = UserUT // may be edited later by other users
+
 	query := func() (*mongo.InsertOneResult, error) {
 		return mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
