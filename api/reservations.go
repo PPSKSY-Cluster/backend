@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
+	"github.com/PPSKSY-Cluster/backend/mail"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -124,6 +125,7 @@ func reservationClusterHandler() func(c *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Success      201  {object}  db.Reservation
+// @Failure      404  {object}  string
 // @Failure      500  {object}  string
 // @Router       /api/reservations/ [post]
 func reservationCreateHandler() func(c *fiber.Ctx) error {
@@ -134,6 +136,11 @@ func reservationCreateHandler() func(c *fiber.Ctx) error {
 		}
 
 		reservation, err := db.AddReservation(*r)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		err = mail.ScheduleMail(reservation)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
@@ -171,6 +178,11 @@ func reservationUpdateHandler() func(c *fiber.Ctx) error {
 		}
 
 		reservation.ID = id
+		err = mail.ScheduleMail(reservation)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
 		c.JSON(reservation)
 		return c.SendStatus(200)
 	}
@@ -194,7 +206,12 @@ func reservationDeleteHandler() func(c *fiber.Ctx) error {
 
 		err = db.DeleteReservation(id)
 		if err != nil {
-			fiber.NewError(fiber.StatusNotFound, err.Error())
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+
+		err = mail.RemoveIfExists(id)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
 		return c.SendStatus(204)
