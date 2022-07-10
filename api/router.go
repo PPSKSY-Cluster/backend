@@ -31,6 +31,10 @@ func InitRouter() (*fiber.App, error) {
 	api.Get("/docs/*", docsHandler())
 	api.Post("/login", loginHandler())
 
+	tokenRoutes := api.Group("/token-check")
+	tokenRoutes.Use(auth.CheckToken())
+	tokenRoutes.Post("/", tokenCheckHandler())
+
 	userRoutes := api.Group("/users")
 	initUserHandlers(userRoutes)
 
@@ -43,6 +47,17 @@ func InitRouter() (*fiber.App, error) {
 	return router, nil
 }
 
+// @Description  Route for testing jwt token validity
+// @Tags         general
+// @Success      200
+// @Failure		 401
+// @Router       /api/login [post]
+func tokenCheckHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.SendStatus(200)
+	}
+}
+
 // @Description  Route for login
 // @Tags         general
 // @Accept       json
@@ -50,7 +65,7 @@ func InitRouter() (*fiber.App, error) {
 // @Param        username   body   string  true  "Username"
 // @Param        password   body   string  true  "Password"
 // @Success      200  {string} string
-// @Success      401
+// @Failure		 401
 // @Router       /api/login [post]
 func loginHandler() func(c *fiber.Ctx) error {
 	type LoginPair struct {
