@@ -10,6 +10,8 @@ import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -52,7 +54,7 @@ func CheckCredentials() func(username, password string) (db.User, string, error)
 		token := jwt.New(jwt.SigningMethodRS256)
 
 		claims := token.Claims.(jwt.MapClaims)
-		claims["username"] = username
+		claims["userid"] = user.ID
 		claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
 		t, err := token.SignedString(authInstance.JWTRefreshKeypair)
 		if err != nil {
@@ -79,8 +81,9 @@ func HashPW(password string) (string, error) {
 	return string(hashedPW), nil
 }
 
-// Middleware that checks if the user is authenticated
-func CheckToken() func(c *fiber.Ctx) error {
+// Middleware that checks if the user is authenticated and authorized under
+// under given restriction
+func CheckToken(restrictedTo db.UserType) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		token := c.Get("Authorization")
 		token = strings.Replace(token, "Bearer ", "", 1)
@@ -88,12 +91,25 @@ func CheckToken() func(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusUnauthorized, "No JWT token provided")
 		}
 
-		_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		claims := jwt.MapClaims{}
+		_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
 			return &authInstance.JWTAccessKeypair.PublicKey, nil
 		})
 
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+		}
+
+		id, _ := primitive.ObjectIDFromHex(claims["userid"].(string))
+		user, err := db.GetUserById(id)
+		if err != nil {
+			c.JSON(bson.M{"Message": "Could not find user"})
+			return c.SendStatus(404)
+		}
+
+		if !userTypeIncludes(user.Type, restrictedTo) {
+			c.JSON(bson.M{"Message": "Not authorized to access this route"})
+			return c.SendStatus(401)
 		}
 
 		return c.Next()
@@ -119,4 +135,20 @@ func RefreshAccessToken(token string) (string, error) {
 	}
 
 	return accessStr, nil
+}
+
+// does the given type include the rights of the expected type
+func userTypeIncludes(givenType db.UserType, expectedType db.UserType) bool {
+	hasSuperAdminRights := db.SuperAdminUT == givenType
+	hasAdminRights := hasSuperAdminRights || db.AdminUT == givenType
+	switch {
+	case expectedType == db.UserUT:
+		return true
+	case expectedType == db.AdminUT && hasAdminRights:
+		return true
+	case expectedType == db.SuperAdminUT && hasSuperAdminRights:
+		return true
+	default:
+		return false
+	}
 }

@@ -10,7 +10,7 @@ import (
 func initUserHandlers(userRouter fiber.Router) {
 	userRouter.Post("/", userCreateHandler())
 
-	userRouter.Use(auth.CheckToken())
+	userRouter.Use(auth.CheckToken(db.UserUT))
 	userRouter.Get("/", userListHandler())
 	userRouter.Get("/:id", userDetailHandler())
 	userRouter.Put("/:id", userUpdateHandler())
