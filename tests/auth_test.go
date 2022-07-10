@@ -18,7 +18,7 @@ func Test_auth(t *testing.T) {
 
 	// create user and get a viable token
 	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, _ := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user)
 
 	// use wrong pw
 	wrongPWUser := user
@@ -70,6 +70,36 @@ func Test_auth(t *testing.T) {
 	}
 
 	_ = executeTestReq[db.User](t, app, checkCorrectJWTTest, tokenStr)
+	// edit user and try to login again
+	editUser := createdUser
+	editUser.Username = "changedName"
+	editTest := TestReq{
+		description:  "Try to edit the user but not their pw (expect 200)",
+		expectedCode: 200,
+		route:        "/api/users/" + createdUser.ID.Hex(),
+		method:       "PUT",
+		body:         editUser,
+		expectedData: editUser,
+	}
+
+	_ = executeTestReq[db.User](t, app, editTest, tokenStr)
+
+	editUser.Password = user.Password
+	loginTest := TestReq{
+		description:  "Try to login chagned user (expect 200)",
+		expectedCode: 200,
+		route:        "/api/login",
+		method:       "POST",
+		body:         editUser,
+		expectedData: nil,
+	}
+
+	type LoginRes struct {
+		User  db.User `json:"user"`
+		Token string  `json:"token"`
+	}
+
+	_ = executeTestReq[LoginRes](t, app, loginTest, tokenStr)
 
 	// request with correct jwt is made in users_test.go
 }
