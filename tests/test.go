@@ -74,13 +74,15 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string
 		body:         user,
 	}
 
-	type TokenRes struct {
-		Token string `json:"token"`
+	type LoginRes struct {
+		User  db.User `json:"user"`
+		Token string  `json:"token"`
 	}
 
-	token := executeTestReq[TokenRes](t, app, loginReq, "")
-	bearerStr := "Bearer " + token.Token
+	token := executeTestReq[LoginRes](t, app, loginReq, "")
+	compare(t, expectUser, token.User)
 
+	bearerStr := "Bearer " + token.Token
 	return bearerStr, createdUser
 }
 
