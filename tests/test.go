@@ -161,6 +161,7 @@ func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 }
 
 func compareSlice(t assert.TestingT, expected reflect.Value, actual reflect.Value) {
+	assert.LessOrEqual(t, expected.Len(), actual.Len())
 	for i := 0; i < expected.Len(); i++ {
 		compareStruct(t, expected.Index(i), actual.Index(i))
 	}
