@@ -15,7 +15,8 @@ import (
 )
 
 type Auth struct {
-	JWTKeypair *rsa.PrivateKey
+	JWTAccessKeypair  *rsa.PrivateKey
+	JWTRefreshKeypair *rsa.PrivateKey
 }
 
 var authInstance Auth
@@ -25,7 +26,13 @@ func InitAuth() error {
 	if err != nil {
 		return err
 	}
-	authInstance.JWTKeypair = keypair
+	authInstance.JWTAccessKeypair = keypair
+
+	keypair, err = generateKeyPair()
+	if err != nil {
+		return err
+	}
+	authInstance.JWTRefreshKeypair = keypair
 
 	return nil
 }
@@ -47,9 +54,8 @@ func CheckCredentials() func(username, password string) (db.User, string, error)
 
 		claims := token.Claims.(jwt.MapClaims)
 		claims["username"] = username
-		claims["admin"] = true
 		claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
-		t, err := token.SignedString(authInstance.JWTKeypair)
+		t, err := token.SignedString(authInstance.JWTRefreshKeypair)
 		if err != nil {
 			return db.User{}, "", err
 		}
@@ -85,7 +91,7 @@ func CheckToken() func(c *fiber.Ctx) error {
 		}
 
 		_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return &authInstance.JWTKeypair.PublicKey, nil
+			return &authInstance.JWTAccessKeypair.PublicKey, nil
 		})
 
 		if err != nil {
@@ -95,4 +101,25 @@ func CheckToken() func(c *fiber.Ctx) error {
 
 		return c.Next()
 	}
+}
+
+// takes a refresh token as parameter and returns a new access token
+func RefreshAccessToken(token string) (string, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
+		return &authInstance.JWTRefreshKeypair.PublicKey, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() // expires in 1 hour
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	accessStr, err := accessToken.SignedString(authInstance.JWTAccessKeypair)
+	if err != nil {
+		return "", err
+	}
+
+	return accessStr, nil
 }
