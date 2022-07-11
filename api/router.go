@@ -2,6 +2,7 @@ package api
 
 import (
 	"os"
+	"strings"
 
 	"github.com/PPSKSY-Cluster/backend/auth"
 	_ "github.com/PPSKSY-Cluster/backend/docs"
@@ -30,6 +31,7 @@ func InitRouter() (*fiber.App, error) {
 	api.Get("/ping", pingHandler())
 	api.Get("/docs/*", docsHandler())
 	api.Post("/login", loginHandler())
+	api.Post("/refresh", refreshHandler())
 
 	tokenRoutes := api.Group("/token-check")
 	tokenRoutes.Use(auth.CheckToken())
@@ -54,6 +56,28 @@ func InitRouter() (*fiber.App, error) {
 // @Router       /api/login [post]
 func tokenCheckHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		return c.SendStatus(200)
+	}
+}
+
+// @Description  Route for refreshing the access token
+// @Tags         general
+// @Produce      json
+// @Success      200  {string} string
+// @Failure      401
+// @Router       /api/refresh [post]
+func refreshHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		token := c.Get("Authorization")
+		token = strings.Replace(token, "Bearer ", "", 1)
+
+		newAccess, err := auth.RefreshAccessToken(token)
+		if err != nil {
+			c.JSON(bson.M{"Message": err.Error()})
+			return c.SendStatus(401)
+		}
+
+		c.JSON(bson.M{"token": newAccess})
 		return c.SendStatus(200)
 	}
 }
