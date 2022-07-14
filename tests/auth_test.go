@@ -18,7 +18,7 @@ func Test_auth(t *testing.T) {
 
 	// create user and get a viable token
 	user := db.User{Username: "foo", Password: "bar"}
-	createUserAndLogin(t, app, user)
+	tokenStr, _ := createUserAndLogin(t, app, user)
 
 	// use wrong pw
 	wrongPWUser := user
@@ -46,6 +46,30 @@ func Test_auth(t *testing.T) {
 	}
 
 	_ = executeTestReq[db.User](t, app, getAllUsersWrongJWTTest, "not.a.token")
+
+	// check wrong jwt token
+	checkWrongJWTTest := TestReq{
+		description:  "Use token check route with wrong token (expect 401)",
+		expectedCode: 401,
+		route:        "/api/token-check",
+		method:       "POST",
+		body:         nil,
+		expectedData: nil,
+	}
+
+	_ = executeTestReq[db.User](t, app, checkWrongJWTTest, "not.a.token")
+
+	// check correct jwt
+	checkCorrectJWTTest := TestReq{
+		description:  "Use token check route with correct token (expect 200)",
+		expectedCode: 200,
+		route:        "/api/token-check",
+		method:       "POST",
+		body:         nil,
+		expectedData: nil,
+	}
+
+	_ = executeTestReq[db.User](t, app, checkCorrectJWTTest, tokenStr)
 
 	// request with correct jwt is made in users_test.go
 }
