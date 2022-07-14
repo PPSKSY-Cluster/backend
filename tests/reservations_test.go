@@ -18,11 +18,18 @@ func Test_reservations(t *testing.T) {
 	}
 	defer db.DropDB(os.Getenv("DB_NAME"))
 
+	//TODO: Change the mail endpoint!
 	user := db.User{Username: "foo", Password: "bar"}
 	tokenStr, createdUser := createUserAndLogin(t, app, user)
 
 	start := time.Now()
-	end := start.Add(time.Hour * 48)
+	end := start.Add(time.Minute * 3)
+
+	//TODO: Actually think about how to test mail functionality -> Tests quit running, before task is scheduled
+	diff := (float64(end.Unix()) - float64(start.Unix())) * 0.9
+	mailTime := time.Unix(start.Unix()+int64(diff), 0)
+
+	fmt.Println("The time the mail should arrive at: " + mailTime.String())
 
 	foosReservation := db.Reservation{
 		ClusterID: primitive.NewObjectID(),
@@ -68,7 +75,7 @@ func Test_reservations(t *testing.T) {
 	getAllClusterTest := TestReq{
 		description:  "Get all reservations with given cluster id (expect 200)",
 		expectedCode: 200,
-		route:        "/api/reservations/?cId=" + createdReservation.ClusterID.Hex(),
+		route:        "/api/reservations/clusters/" + createdReservation.ClusterID.Hex(),
 		method:       "GET",
 		body:         nil,
 		expectedData: []db.Reservation{createdReservation},
@@ -78,7 +85,7 @@ func Test_reservations(t *testing.T) {
 	getAllUserTest := TestReq{
 		description:  "Get all reservations with given uid (expect 200)",
 		expectedCode: 200,
-		route:        "/api/reservations/?uId=" + createdReservation.UserID.Hex(),
+		route:        "/api/reservations/users/" + createdReservation.UserID.Hex(),
 		method:       "GET",
 		body:         nil,
 		expectedData: []db.Reservation{createdReservation},
