@@ -71,13 +71,12 @@ func GetUserById(_id primitive.ObjectID) (User, error) {
 	return user, nil
 }
 
-func GetUserCredentials(username string) (User, error) {
+func GetUserWithCredentials(username string) (User, error) {
 	query := func() (*mongo.SingleResult, error) {
 		singleRes := mdbInstance.Client.
 			Database(os.Getenv("DB_NAME")).
 			Collection("users").
-			FindOne(mdbInstance.Ctx, bson.M{"username": username},
-				options.FindOne().SetProjection(bson.M{"password": 1}))
+			FindOne(mdbInstance.Ctx, bson.M{"username": username})
 		return singleRes, singleRes.Err()
 	}
 

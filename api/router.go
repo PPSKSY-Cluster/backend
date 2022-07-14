@@ -82,12 +82,12 @@ func loginHandler() func(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		token, err := checkCredentialsF(login.Username, login.Password)
+		user, token, err := checkCredentialsF(login.Username, login.Password)
 		if err != nil {
 			return c.SendStatus(401)
 		}
 
-		c.JSON(bson.M{"token": token})
+		c.JSON(bson.M{"token": token, "user": user})
 		return c.SendStatus(200)
 	}
 }
