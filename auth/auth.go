@@ -31,16 +31,16 @@ func InitAuth() error {
 }
 
 // Helper to generate a JWT token on login
-func CheckCredentials() func(username, password string) (string, error) {
-	return func(username, password string) (string, error) {
-		user, err := db.GetUserCredentials(username)
+func CheckCredentials() func(username, password string) (db.User, string, error) {
+	return func(username, password string) (db.User, string, error) {
+		user, err := db.GetUserWithCredentials(username)
 		if err != nil {
-			return "", err
+			return db.User{}, "", err
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 		if err != nil {
-			return "", err
+			return db.User{}, "", err
 		}
 
 		token := jwt.New(jwt.SigningMethodRS256)
@@ -51,10 +51,11 @@ func CheckCredentials() func(username, password string) (string, error) {
 		claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
 		t, err := token.SignedString(authInstance.JWTKeypair)
 		if err != nil {
-			return "", err
+			return db.User{}, "", err
 		}
 
-		return t, nil
+		user.Password = ""
+		return user, t, nil
 	}
 }
 
@@ -89,7 +90,7 @@ func CheckToken() func(c *fiber.Ctx) error {
 
 		if err != nil {
 			c.JSON(bson.M{"Message": err.Error()})
-			c.SendStatus(401)
+			return c.SendStatus(401)
 		}
 
 		return c.Next()
