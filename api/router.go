@@ -49,7 +49,7 @@ func InitRouter() (*fiber.App, error) {
 	return router, nil
 }
 
-// @Description  Route for testing jwt token validity
+// @Description  Route for testing jwt access token validity
 // @Tags         general
 // @Success      200
 // @Failure		 401
@@ -82,7 +82,7 @@ func refreshHandler() func(c *fiber.Ctx) error {
 	}
 }
 
-// @Description  Route for login
+// @Description  Route for login (token in result is a refresh token)
 // @Tags         general
 // @Accept       json
 // @Produce      json

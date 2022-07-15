@@ -79,11 +79,27 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string
 		Token string  `json:"token"`
 	}
 
-	token := executeTestReq[LoginRes](t, app, loginReq, "")
-	compare(t, expectUser, token.User)
+	loginRes := executeTestReq[LoginRes](t, app, loginReq, "")
+	compare(t, expectUser, loginRes.User)
 
-	bearerStr := "Bearer " + token.Token
-	return bearerStr, createdUser
+	refreshBearerStr := "Bearer " + loginRes.Token
+
+	accessReq := TestReq{
+		description:  "Get an access token for the created user (expect 200)",
+		expectedCode: 200,
+		route:        "/api/refresh",
+		method:       "POST",
+		body:         nil,
+	}
+
+	type AccessRes struct {
+		Token string `json:"token"`
+	}
+
+	accessRes := executeTestReq[AccessRes](t, app, accessReq, refreshBearerStr)
+	accessBearerStr := "Bearer " + accessRes.Token
+
+	return accessBearerStr, createdUser
 }
 
 // executes a test request with the given params and
