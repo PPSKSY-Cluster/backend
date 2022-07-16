@@ -112,6 +112,9 @@ func CheckToken(restrictedTo db.UserType) func(c *fiber.Ctx) error {
 			return c.SendStatus(401)
 		}
 
+		c.Locals("jwtUserId", user.ID)
+		c.Locals("jwtUserType", user.Type)
+
 		return c.Next()
 	}
 }
