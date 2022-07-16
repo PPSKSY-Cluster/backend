@@ -19,6 +19,9 @@ jobs:
           mongodb-version: ${{ matrix.mongodb-version }}
           mongodb-port: ${{ matrix.mongodb-port }}
 
+      - name: Start fake-smtp server
+        uses: docker://gessnerfl/fake-smtp-server
+
       - name: Setup go
         uses: actions/setup-go@v3
         with:
