@@ -5,7 +5,9 @@ import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/go-co-op/gocron"
 	"log"
+	"os"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -18,9 +20,15 @@ var check = func() {
 }
 
 func InitSchedule() error {
+
+	every, err := strconv.Atoi(os.Getenv("NOTIFICATION_INTERVAL"))
+	if err != nil {
+		return err
+	}
+
 	if s.Len() == 0 {
-		_, err := s.Every(2).
-			Minute(). //TODO: Change back to Every 1 hour!
+		_, err := s.Every(every).
+			Second().
 			Do(check)
 		if err != nil {
 			return err
@@ -85,15 +93,13 @@ func checkAvailability(notification db.ReservationNotification) error {
 		if k > time.Now().AddDate(0, 3, 0).Unix() {
 			break
 		}
-		if clusterReservations[k] < cluster.Nodes { //Assumes that small amounts of nodes also warrant a reservation
-			fmt.Println("Nodes available!")
+		if clusterReservations[k] <= cluster.Nodes-2 { //Assumes that 2 nodes warrant a reservation
 			t += 1
 		} else {
-			fmt.Println("No nodes available!", cluster.Nodes, clusterReservations[k])
 			t = 0
 			continue
 		}
-		if t >= 2 { //Assumes that 2 consecutive days are enough to make a reservation
+		if t >= 3 {
 			fmt.Println("Sending Notification!")
 			message := ReservationNotification(user.Mail)
 			if err := SendMail(user.Mail, message); err != nil {
@@ -103,6 +109,7 @@ func checkAvailability(notification db.ReservationNotification) error {
 			if err := db.DeleteNotification(notification.ID); err != nil {
 				return err
 			}
+			break
 		}
 	}
 

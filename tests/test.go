@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"time"
 
 	"github.com/PPSKSY-Cluster/backend/api"
 	"github.com/PPSKSY-Cluster/backend/auth"
@@ -48,6 +49,16 @@ type TestReq struct {
 	method       string
 	body         interface{}
 	expectedData interface{}
+}
+
+type Mail struct {
+	Id          int       `json:"id"`
+	FromAdress  string    `json:"fromAdress"`
+	ToAdress    string    `json:"toAdress"`
+	Subject     string    `json:"subject"`
+	ReceivedOn  time.Time `json:"receivedOn"`
+	RawData     string    `json:"rawData"`
+	Attachments []string  `json:"attachments"`
 }
 
 // the provided user will be created, logged in
@@ -126,6 +137,63 @@ func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bear
 	}
 
 	return data
+}
+
+func checkMailTime(t assert.TestingT, send time.Time) {
+	time.Sleep(time.Second * 30)
+
+	mail := checkMail()
+	diff := mail.ReceivedOn.Local().Sub(send)
+	assert.Less(t, diff, time.Second*1)
+
+	deleteMail()
+}
+
+func checkMailNotification(t assert.TestingT, to string, notification bool) {
+	time.Sleep(time.Second * 15)
+
+	email := checkMail()
+
+	subject := ""
+	if notification {
+		subject = "Cluster Reservierung wieder mÃ¶glich " //Look into changing this!
+	}
+
+	assert.Equal(t, subject, email.Subject)
+	deleteMail()
+}
+
+func checkMail() Mail {
+	var mails []Mail
+
+	r, err := http.Get("http://localhost:5080/api/email")
+	if err != nil {
+		panic(err)
+	}
+	defer r.Body.Close()
+
+	if err := json.NewDecoder(r.Body).Decode(&mails); err != nil {
+		panic(err)
+	}
+
+	if len(mails) == 0 {
+		return Mail{}
+	}
+
+	return mails[0]
+}
+
+func deleteMail() {
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", "http://localhost:5080/api/email", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := client.Do(req)
+	if err != nil || res.StatusCode != 200 {
+		panic(err)
+	}
 }
 
 func compare(t assert.TestingT, expectedData interface{}, data interface{}) {

@@ -15,18 +15,19 @@ func initNotificationHandlers(notificationRouter fiber.Router) {
 // @Description  Let server notify for reservations
 // @Tags         reservationNotifications
 // @Accept       json
-// @Success      200
+// @Success      201
 // @Failure      400  {object}  string
 // @Failure		 500  {object}  string
 // @Router       / [post]
 func notificationCreateHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		notification := new(db.ReservationNotification)
-		if err := c.BodyParser(notification); err != nil {
+		n := new(db.ReservationNotification)
+		if err := c.BodyParser(n); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		if _, err := db.AddNotification(*notification); err != nil {
+		notification, err := db.AddNotification(*n)
+		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
@@ -34,6 +35,7 @@ func notificationCreateHandler() func(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
-		return c.SendStatus(200)
+		c.JSON(notification)
+		return c.SendStatus(201)
 	}
 }
