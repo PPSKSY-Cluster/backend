@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - uses: actions/checkout@v3
+
       - name: Start containers
         run: docker-compose -f "tests/docker-compose.yml" up -d --build
 
@@ -14,7 +16,6 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '^1.18.0'
-      - uses: actions/checkout@v3
 
       - name: create test env file
         run: |
