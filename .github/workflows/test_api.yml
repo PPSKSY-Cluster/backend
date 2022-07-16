@@ -8,7 +8,7 @@ jobs:
     
     steps:
       - name: Start containers
-        run: docker-compose -f "/tests/docker-compose.yml" up -d --build
+        run: docker-compose -f "tests/docker-compose.yml" up -d --build
 
       - name: Setup go
         uses: actions/setup-go@v3
@@ -34,4 +34,4 @@ jobs:
       - run: go test ./tests -tags test
 
       - name: Stop containers
-        run: docker-compose -f "/tests/docker-compose.yml" down
+        run: docker-compose -f "tests/docker-compose.yml" down
