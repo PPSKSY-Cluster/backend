@@ -22,7 +22,7 @@ jobs:
           cd tests
           touch .env
           echo DB_NAME=test >> .env
-          echo MONGODB_URI=mongodb://localhost:${{ matrix.mongodb-port }}/test >> .env
+          echo MONGODB_URI=mongodb://localhost:27017/test >> .env
           echo PORT=8080 >> .env
           echo CLIENT_URL=http://localhost:3000 >> .env
           echo BCRYPT_COST=10 >> .env
