@@ -78,6 +78,7 @@ func userCreateHandler() func(*fiber.Ctx) error {
 		if err := c.BodyParser(u); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
+		u.Type = db.UserUT
 
 		hashedPW, err := auth.HashPW(u.Password)
 		if err != nil {
@@ -119,7 +120,31 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 				"Could not convert given object ID, did you use the right ID-format?")
 		}
 
+		// only super-admin or the user themself are allowed to edit
+		isSuperAdmin := c.Locals("jwtUserType") != db.SuperAdminUT
+		if id != c.Locals("jwtUserId") || !isSuperAdmin {
+			return c.SendStatus(401)
+		}
+
+		// only super admins may change the user type and only the user may
+		// change their PW
+		if isSuperAdmin {
+			u.Password = ""
+		} else {
+			u.Type = c.Locals("jwtUserType").(db.UserType)
+		}
+
+		// if a user wants to change their PW, hash it first
+		if u.Password != "" {
+			u.Password, err = auth.HashPW(u.Password)
+			if err != nil {
+				return fiber.NewError(fiber.StatusBadRequest,
+					"Could not hash the given password : "+err.Error())
+			}
+		}
+
 		user, err := db.EditUser(id, *u)
+
 		if err != nil {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
@@ -144,6 +169,10 @@ func userDeleteHandler() func(*fiber.Ctx) error {
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest,
 				"Could not convert given object ID, did you use the right ID-format?")
+		}
+
+		if id != c.Locals("jwtUserId") {
+			return c.SendStatus(401)
 		}
 
 		err = db.DeleteUser(id)
