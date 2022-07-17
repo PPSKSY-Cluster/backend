@@ -127,8 +127,8 @@ func EditUser(_id primitive.ObjectID, user User) (User, error) {
 			UpdateOne(mdbInstance.Ctx, bson.M{"_id": _id}, bson.M{"$set": user})
 	}
 
-	_, err := runQuery[*mongo.UpdateResult](query)
-	if err != nil {
+	updateRes, err := runQuery[*mongo.UpdateResult](query)
+	if err != nil && updateRes.ModifiedCount != 1 {
 		return User{}, err
 	}
 	user.Password = ""
