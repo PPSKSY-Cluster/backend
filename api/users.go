@@ -89,6 +89,7 @@ func userCreateHandler() func(*fiber.Ctx) error {
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
+		user.Password = ""
 
 		c.JSON(user)
 		return c.SendStatus(201)
@@ -123,7 +124,7 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
-		user.ID = id
+		user.Password = ""
 		c.JSON(user)
 		return c.SendStatus(200)
 	}

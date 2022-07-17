@@ -113,7 +113,6 @@ func AddUser(user User) (User, error) {
 	}
 
 	user.ID = insertRes.InsertedID.(primitive.ObjectID)
-	user.Password = ""
 
 	return user, nil
 }
@@ -131,8 +130,8 @@ func EditUser(_id primitive.ObjectID, user User) (User, error) {
 	if err != nil && updateRes.ModifiedCount != 1 {
 		return User{}, err
 	}
-	user.Password = ""
 
+	user.ID = _id
 	return user, nil
 }
 
