@@ -25,7 +25,7 @@ func Test_cresources(t *testing.T) {
 	userWithHashPw.Password, _ = auth.HashPW(user.Password)
 
 	createdUser, _ := db.AddUserWithType(userWithHashPw)
-	tokenStr, _ := auth.CheckCredentials()(user.Username, user.Password)
+	_, tokenStr, _ := auth.CheckCredentials()(user.Username, user.Password)
 
 	fooscResource := db.CResource{
 		Name:            "foos cresource",

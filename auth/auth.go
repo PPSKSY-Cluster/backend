@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/rsa"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -85,17 +86,9 @@ func HashPW(password string) (string, error) {
 // under given restriction
 func CheckToken(restrictedTo db.UserType) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		token := c.Get("Authorization")
-		token = strings.Replace(token, "Bearer ", "", 1)
-		if token == "" {
-			return fiber.NewError(fiber.StatusUnauthorized, "No JWT token provided")
-		}
 
-		claims := jwt.MapClaims{}
-		_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
-			return &authInstance.JWTAccessKeypair.PublicKey, nil
-		})
-
+		bearerStr := c.Get("Authorization")
+		claims, err := GetClaimsFromAccessToken(bearerStr)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
@@ -154,4 +147,24 @@ func userTypeIncludes(givenType db.UserType, expectedType db.UserType) bool {
 	default:
 		return false
 	}
+}
+
+// expects a bearer string with a jwt token signed by our jwt access key
+// if successful the claims of said token  are returned
+func GetClaimsFromAccessToken(bearerStr string) (jwt.MapClaims, error) {
+	token := strings.Replace(bearerStr, "Bearer ", "", 1)
+	if token == "" {
+		return nil, errors.New("no JWT token provided")
+	}
+
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
+		return &authInstance.JWTAccessKeypair.PublicKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }

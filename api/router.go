@@ -33,9 +33,7 @@ func InitRouter() (*fiber.App, error) {
 	api.Post("/login", loginHandler())
 	api.Post("/refresh", refreshHandler())
 
-	tokenRoutes := api.Group("/token-check")
-	tokenRoutes.Use(auth.CheckToken())
-	tokenRoutes.Post("/", tokenCheckHandler())
+	api.Post("/token-check", tokenCheckHandler())
 
 	userRoutes := api.Group("/users")
 	initUserHandlers(userRoutes)
@@ -56,6 +54,11 @@ func InitRouter() (*fiber.App, error) {
 // @Router       /api/login [post]
 func tokenCheckHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		bearerStr := c.Get("Authorization")
+		_, err := auth.GetClaimsFromAccessToken(bearerStr)
+		if err != nil {
+			return c.SendStatus(401)
+		}
 		return c.SendStatus(200)
 	}
 }
