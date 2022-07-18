@@ -73,8 +73,7 @@ func refreshHandler() func(c *fiber.Ctx) error {
 
 		newAccess, err := auth.RefreshAccessToken(token)
 		if err != nil {
-			c.JSON(bson.M{"Message": err.Error()})
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		c.JSON(bson.M{"token": newAccess})

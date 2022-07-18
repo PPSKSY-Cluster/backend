@@ -10,7 +10,6 @@ import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -86,8 +85,7 @@ func CheckToken() func(c *fiber.Ctx) error {
 		token := c.Get("Authorization")
 		token = strings.Replace(token, "Bearer ", "", 1)
 		if token == "" {
-			c.JSON(bson.M{"Message": "No JWT token provided"})
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, "No JWT token provided")
 		}
 
 		_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -95,8 +93,7 @@ func CheckToken() func(c *fiber.Ctx) error {
 		})
 
 		if err != nil {
-			c.JSON(bson.M{"Message": err.Error()})
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		return c.Next()
