@@ -2,6 +2,7 @@ package api
 
 import (
 	"os"
+	"strings"
 
 	"github.com/PPSKSY-Cluster/backend/auth"
 	_ "github.com/PPSKSY-Cluster/backend/docs"
@@ -30,6 +31,7 @@ func InitRouter() (*fiber.App, error) {
 	api.Get("/ping", pingHandler())
 	api.Get("/docs/*", docsHandler())
 	api.Post("/login", loginHandler())
+	api.Post("/refresh", refreshHandler())
 
 	tokenRoutes := api.Group("/token-check")
 	tokenRoutes.Use(auth.CheckToken())
@@ -47,7 +49,7 @@ func InitRouter() (*fiber.App, error) {
 	return router, nil
 }
 
-// @Description  Route for testing jwt token validity
+// @Description  Route for testing jwt access token validity
 // @Tags         general
 // @Success      200
 // @Failure		 401
@@ -58,7 +60,28 @@ func tokenCheckHandler() func(c *fiber.Ctx) error {
 	}
 }
 
-// @Description  Route for login
+// @Description  Route for refreshing the access token
+// @Tags         general
+// @Produce      json
+// @Success      200  {string} string
+// @Failure      401
+// @Router       /api/refresh [post]
+func refreshHandler() func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		token := c.Get("Authorization")
+		token = strings.Replace(token, "Bearer ", "", 1)
+
+		newAccess, err := auth.RefreshAccessToken(token)
+		if err != nil {
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+		}
+
+		c.JSON(bson.M{"token": newAccess})
+		return c.SendStatus(200)
+	}
+}
+
+// @Description  Route for login (token in result is a refresh token)
 // @Tags         general
 // @Accept       json
 // @Produce      json
