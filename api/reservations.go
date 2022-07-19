@@ -209,10 +209,7 @@ func reservationDeleteHandler() func(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusNotFound, err.Error())
 		}
 
-		err = mail.RemoveIfExists(id)
-		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-		}
+		mail.RemoveIfExists(id)
 
 		return c.SendStatus(204)
 	}

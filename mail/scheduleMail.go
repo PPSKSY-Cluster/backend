@@ -19,10 +19,7 @@ var sendMail = func(to string, message string) {
 }
 
 func ScheduleMail(r db.Reservation) error {
-	err := RemoveIfExists(r.ID)
-	if err != nil {
-		return err
-	}
+	RemoveIfExists(r.ID)
 
 	user, err := db.GetUserById(r.UserID)
 	if err != nil {
@@ -49,6 +46,9 @@ func ScheduleMail(r db.Reservation) error {
 	return nil
 }
 
-func RemoveIfExists(id primitive.ObjectID) error {
-	return scheduler.RemoveByTag(id.String())
+func RemoveIfExists(id primitive.ObjectID) {
+	jobs, _ := scheduler.FindJobsByTag(id.String())
+	if len(jobs) > 0 {
+		_ = scheduler.RemoveByTag(id.String())
+	}
 }
