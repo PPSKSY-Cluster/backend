@@ -121,16 +121,18 @@ func userUpdateHandler() func(*fiber.Ctx) error {
 		}
 
 		// only super-admin or the user themself are allowed to edit
-		isSuperAdmin := c.Locals("jwtUserType") != db.SuperAdminUT
-		if id != c.Locals("jwtUserId") || !isSuperAdmin {
-			return c.SendStatus(401)
+		isSuperAdmin := c.Locals("jwtUserType") == db.SuperAdminUT
+		if id != c.Locals("jwtUserId") && !isSuperAdmin {
+			return fiber.NewError(fiber.StatusUnauthorized)
 		}
 
-		// only super admins may change the user type and only the user may
-		// change their PW
-		if isSuperAdmin {
+		// one may not change other users passwords
+		if id != c.Locals("jwtUserId") {
 			u.Password = ""
-		} else {
+		}
+
+		// only super admins may change user types
+		if !isSuperAdmin {
 			u.Type = c.Locals("jwtUserType").(db.UserType)
 		}
 
