@@ -11,7 +11,6 @@ import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -96,13 +95,11 @@ func CheckToken(restrictedTo db.UserType) func(c *fiber.Ctx) error {
 		id, _ := primitive.ObjectIDFromHex(claims["userid"].(string))
 		user, err := db.GetUserById(id)
 		if err != nil {
-			c.JSON(bson.M{"Message": "Could not find user"})
-			return c.SendStatus(404)
+			return fiber.NewError(fiber.StatusNotFound, "Could not find user")
 		}
 
 		if !userTypeIncludes(user.Type, restrictedTo) {
-			c.JSON(bson.M{"Message": "Not authorized to access this route"})
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, "Not authorized to access this route")
 		}
 
 		c.Locals("jwtUserId", user.ID)

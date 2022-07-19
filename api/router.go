@@ -57,7 +57,7 @@ func tokenCheckHandler() func(c *fiber.Ctx) error {
 		bearerStr := c.Get("Authorization")
 		_, err := auth.GetClaimsFromAccessToken(bearerStr)
 		if err != nil {
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 		return c.SendStatus(200)
 	}
@@ -105,12 +105,12 @@ func loginHandler() func(c *fiber.Ctx) error {
 		var login LoginPair
 
 		if err := c.BodyParser(&login); err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		user, token, err := checkCredentialsF(login.Username, login.Password)
 		if err != nil {
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		c.JSON(bson.M{"token": token, "user": user})

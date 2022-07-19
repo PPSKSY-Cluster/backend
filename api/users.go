@@ -174,7 +174,7 @@ func userDeleteHandler() func(*fiber.Ctx) error {
 		}
 
 		if id != c.Locals("jwtUserId") {
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized)
 		}
 
 		err = db.DeleteUser(id)
