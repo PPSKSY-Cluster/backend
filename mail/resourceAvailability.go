@@ -26,18 +26,16 @@ func InitSchedule() error {
 		return err
 	}
 
-	if s.Len() == 0 {
-		_, err := s.Every(every).
-			Second().
-			Do(check)
-		if err != nil {
-			return err
-		}
-
-		s.StartAsync()
-
-		fmt.Println("Initialized schedule")
+	_, err = s.Every(every).
+		Second().
+		Do(check)
+	if err != nil {
+		return err
 	}
+
+	s.StartAsync()
+
+	fmt.Println("Initialized schedule")
 
 	return nil
 }
@@ -76,13 +74,15 @@ func checkAvailability(notification db.ReservationNotification) error {
 	clusterReservations := make(map[int64]int64) //Maps startTime to nodes used
 	var keyList []int64
 	for _, r := range reservations {
-		for start := r.StartTime; start < time.Now().AddDate(0, 3, 0).Unix(); start += 86400 { //1 Day = 86400 seconds
+		for start := time.Now().Unix(); start < time.Now().AddDate(0, 3, 0).Unix(); start += 86400 { //1 Day = 86400 seconds
+			if _, ok := clusterReservations[start]; !ok {
+				keyList = append(keyList, start)
+			}
 			if start < r.EndTime {
 				clusterReservations[start] += r.Nodes
 			} else {
 				clusterReservations[start] += 0
 			}
-			keyList = append(keyList, start)
 		}
 	}
 
@@ -90,9 +90,6 @@ func checkAvailability(notification db.ReservationNotification) error {
 	sort.Slice(keyList, func(i, j int) bool { return keyList[i] < keyList[j] })
 	t := 0
 	for _, k := range keyList {
-		if k > time.Now().AddDate(0, 3, 0).Unix() {
-			break
-		}
 		if clusterReservations[k] <= cluster.Nodes-2 { //Assumes that 2 nodes warrant a reservation
 			t += 1
 		} else {

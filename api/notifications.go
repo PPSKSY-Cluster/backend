@@ -20,6 +20,10 @@ func initNotificationHandlers(notificationRouter fiber.Router) {
 // @Failure		 500  {object}  string
 // @Router       / [post]
 func notificationCreateHandler() func(c *fiber.Ctx) error {
+	if err := mail.InitSchedule(); err != nil {
+		panic(err)
+	}
+
 	return func(c *fiber.Ctx) error {
 		n := new(db.ReservationNotification)
 		if err := c.BodyParser(n); err != nil {
@@ -28,10 +32,6 @@ func notificationCreateHandler() func(c *fiber.Ctx) error {
 
 		notification, err := db.AddNotification(*n)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-		}
-
-		if err := mail.InitSchedule(); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
