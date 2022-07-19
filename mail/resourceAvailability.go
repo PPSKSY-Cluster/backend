@@ -1,7 +1,6 @@
 package mail
 
 import (
-	"fmt"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/go-co-op/gocron"
 	"log"
@@ -20,7 +19,6 @@ var check = func() {
 }
 
 func InitSchedule() error {
-
 	every, err := strconv.Atoi(os.Getenv("NOTIFICATION_INTERVAL"))
 	if err != nil {
 		return err
@@ -35,11 +33,10 @@ func InitSchedule() error {
 
 	s.StartAsync()
 
-	fmt.Println("Initialized schedule")
-
 	return nil
 }
 
+//Gets called from the schedule
 func checkNotifications() error {
 	notifications, err := db.GetAllNotifications()
 	if err != nil {
@@ -72,9 +69,11 @@ func checkAvailability(notification db.ReservationNotification) error {
 	}
 
 	clusterReservations := make(map[int64]int64) //Maps startTime to nodes used
-	var keyList []int64
+	var keyList []int64                          //Keylist for keeping correct order of days
 	for _, r := range reservations {
-		for start := time.Now().Unix(); start < time.Now().AddDate(0, 3, 0).Unix(); start += 86400 { //1 Day = 86400 seconds
+
+		//Iterate over a span of 3 Months from now  (Increments one day)
+		for start := time.Now().Unix(); start < time.Now().AddDate(0, 3, 0).Unix(); start += 86400 {
 			if _, ok := clusterReservations[start]; !ok {
 				keyList = append(keyList, start)
 			}
@@ -86,9 +85,8 @@ func checkAvailability(notification db.ReservationNotification) error {
 		}
 	}
 
-	//It might be worthwhile to keep track of the amount of usable nodes over the observed available time
 	sort.Slice(keyList, func(i, j int) bool { return keyList[i] < keyList[j] })
-	t := 0
+	t := 0 //The number of successive days with free nodes
 	for _, k := range keyList {
 		if clusterReservations[k] <= cluster.Nodes-2 { //Assumes that 2 nodes warrant a reservation
 			t += 1
@@ -96,8 +94,7 @@ func checkAvailability(notification db.ReservationNotification) error {
 			t = 0
 			continue
 		}
-		if t >= 3 {
-			fmt.Println("Sending Notification!")
+		if t >= 3 { //If number of successive days >= 3 -> Send notification
 			message := ReservationNotification(user.Mail)
 			if err := SendMail(user.Mail, message); err != nil {
 				return err

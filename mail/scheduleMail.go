@@ -13,13 +13,15 @@ var scheduler = gocron.NewScheduler(time.Local)
 var sendMail = func(to string, message string) {
 	err := SendMail(to, message)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 }
 
 func ScheduleMail(r db.Reservation) error {
-	if nil == RemoveIfExists(r.ID) {
-		fmt.Println("Deleted job")
+	err := RemoveIfExists(r.ID)
+	if err != nil {
+		return err
 	}
 
 	user, err := db.GetUserById(r.UserID)
@@ -29,8 +31,6 @@ func ScheduleMail(r db.Reservation) error {
 
 	diff := float64(r.EndTime-r.StartTime) * 0.9
 	t := time.Unix(r.StartTime+int64(diff), 0)
-
-	fmt.Println(t)
 
 	_, err = scheduler.
 		Every(1).

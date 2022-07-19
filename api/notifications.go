@@ -20,6 +20,7 @@ func initNotificationHandlers(notificationRouter fiber.Router) {
 // @Failure		 500  {object}  string
 // @Router       / [post]
 func notificationCreateHandler() func(c *fiber.Ctx) error {
+	//Only executes once to initialize the schedule for checking the resource availability
 	if err := mail.InitSchedule(); err != nil {
 		panic(err)
 	}
