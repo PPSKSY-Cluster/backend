@@ -21,7 +21,7 @@ type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Mail     string             `bson:"mail" json:"mail"`
 	Username string             `bson:"username" json:"username" validate:"required,min=3,max=20"`
-	Password string             `bson:"password" json:"password"`
+	Password string             `bson:"password,omitempty" json:"password,omitempty"`
 	Type     UserType           `bson:"type" json:"-"`
 }
 
