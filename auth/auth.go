@@ -39,7 +39,7 @@ func InitAuth() error {
 	return nil
 }
 
-// Helper to generate a JWT token on login
+// Helper to generate a refresh JWT token on login
 func CheckCredentials() func(username, password string) (db.User, string, error) {
 	return func(username, password string) (db.User, string, error) {
 		user, err := db.GetUserWithCredentials(username)

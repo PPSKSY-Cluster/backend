@@ -52,19 +52,28 @@ type TestReq struct {
 
 // the provided user will be created, logged in
 // and the jwt token will be returned
-func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string, db.User) {
+// usually a user cannot be created with a specific type,
+// 'keepType' allows to use a workaround for that purpose
+func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User, keepType bool) (string, db.User) {
+	var createdUser db.User
 	expectUser := user
 	expectUser.Password = ""
-	createReq := TestReq{
-		description:  "Create one user (expect 201)",
-		expectedCode: 201,
-		route:        "/api/users/",
-		method:       "POST",
-		body:         user,
-		expectedData: expectUser,
-	}
+	if !keepType {
+		createReq := TestReq{
+			description:  "Create one user (expect 201)",
+			expectedCode: 201,
+			route:        "/api/users/",
+			method:       "POST",
+			body:         user,
+			expectedData: expectUser,
+		}
 
-	createdUser := executeTestReq[db.User](t, app, createReq, "")
+		createdUser = executeTestReq[db.User](t, app, createReq, "")
+	} else {
+		userWithHashPw := user
+		userWithHashPw.Password, _ = auth.HashPW(user.Password)
+		createdUser, _ = db.AddUserWithType(userWithHashPw)
+	}
 
 	loginReq := TestReq{
 		description:  "Login the previously created user (expect 200)",
