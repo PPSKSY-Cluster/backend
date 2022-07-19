@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/rsa"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,7 +38,7 @@ func InitAuth() error {
 	return nil
 }
 
-// Helper to generate a JWT token on login
+// Helper to generate a refresh JWT token on login
 func CheckCredentials() func(username, password string) (db.User, string, error) {
 	return func(username, password string) (db.User, string, error) {
 		user, err := db.GetUserWithCredentials(username)
@@ -52,7 +54,7 @@ func CheckCredentials() func(username, password string) (db.User, string, error)
 		token := jwt.New(jwt.SigningMethodRS256)
 
 		claims := token.Claims.(jwt.MapClaims)
-		claims["username"] = username
+		claims["userid"] = user.ID
 		claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // expires in 24 hours
 		t, err := token.SignedString(authInstance.JWTRefreshKeypair)
 		if err != nil {
@@ -79,22 +81,29 @@ func HashPW(password string) (string, error) {
 	return string(hashedPW), nil
 }
 
-// Middleware that checks if the user is authenticated
-func CheckToken() func(c *fiber.Ctx) error {
+// Middleware that checks if the user is authenticated and authorized under
+// under given restriction
+func CheckToken(restrictedTo db.UserType) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		token := c.Get("Authorization")
-		token = strings.Replace(token, "Bearer ", "", 1)
-		if token == "" {
-			return fiber.NewError(fiber.StatusUnauthorized, "No JWT token provided")
-		}
 
-		_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return &authInstance.JWTAccessKeypair.PublicKey, nil
-		})
-
+		bearerStr := c.Get("Authorization")
+		claims, err := GetClaimsFromAccessToken(bearerStr)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
+
+		id, _ := primitive.ObjectIDFromHex(claims["userid"].(string))
+		user, err := db.GetUserById(id)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotFound, "Could not find user")
+		}
+
+		if !userTypeIncludes(user.Type, restrictedTo) {
+			return fiber.NewError(fiber.StatusUnauthorized, "Not authorized to access this route")
+		}
+
+		c.Locals("jwtUserId", user.ID)
+		c.Locals("jwtUserType", user.Type)
 
 		return c.Next()
 	}
@@ -119,4 +128,40 @@ func RefreshAccessToken(token string) (string, error) {
 	}
 
 	return accessStr, nil
+}
+
+// does the given type include the rights of the expected type
+func userTypeIncludes(givenType db.UserType, expectedType db.UserType) bool {
+	hasSuperAdminRights := db.SuperAdminUT == givenType
+	hasAdminRights := hasSuperAdminRights || db.AdminUT == givenType
+	switch {
+	case expectedType == db.UserUT:
+		return true
+	case expectedType == db.AdminUT && hasAdminRights:
+		return true
+	case expectedType == db.SuperAdminUT && hasSuperAdminRights:
+		return true
+	default:
+		return false
+	}
+}
+
+// expects a bearer string with a jwt token signed by our jwt access key
+// if successful the claims of said token  are returned
+func GetClaimsFromAccessToken(bearerStr string) (jwt.MapClaims, error) {
+	token := strings.Replace(bearerStr, "Bearer ", "", 1)
+	if token == "" {
+		return nil, errors.New("no JWT token provided")
+	}
+
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
+		return &authInstance.JWTAccessKeypair.PublicKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }

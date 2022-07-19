@@ -18,7 +18,7 @@ func Test_auth(t *testing.T) {
 
 	// create user and get a viable token
 	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user, false)
 
 	// use wrong pw
 	wrongPWUser := user
