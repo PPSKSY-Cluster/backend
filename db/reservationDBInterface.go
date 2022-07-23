@@ -13,7 +13,7 @@ type Reservation struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	ClusterID primitive.ObjectID `bson:"clusterID" json:"clusterID"`
 	UserID    primitive.ObjectID `bson:"userID" json:"userID"`
-	Nodes     int                `bson:"nodes" json:"nodes"`
+	Nodes     int64              `bson:"nodes" json:"nodes"`
 	StartTime int64              `bson:"startTime" json:"startTime"`
 	EndTime   int64              `bson:"endTime" json:"endTime"`
 	IsExpired bool               `bson:"isExpired" json:"isExpired"`
