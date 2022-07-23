@@ -5,14 +5,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: cluster-thruster
+      run: cluster-thruster
   template:
     metadata:
       labels:
-        app: cluster-thruster
+        run: cluster-thruster
     spec:
       containers:
-        - name: server
+        - name: cluster-thruster
           image: cluster-thruster
           ports:
             - containerPort: 8080
@@ -22,11 +22,11 @@ kind: Service
 metadata:
   name: cluster-thruster-external
 spec:
-  type: NodePort
+  clusterIP: 10.102.68.76
+  type: LoadBalancer
   selector:
     run: cluster-thruster
   ports:
     - name: http
       protocol: TCP
       port: 8080
-      targetPort: 8080

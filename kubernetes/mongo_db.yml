@@ -26,7 +26,6 @@ kind: Service
 metadata:
   name: mongodb-service
 spec:
-  type: LoadBalancer
   selector:
     app: mongodb
   ports:
