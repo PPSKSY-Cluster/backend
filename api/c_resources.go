@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/PPSKSY-Cluster/backend/auth"
 	"github.com/PPSKSY-Cluster/backend/db"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -9,6 +10,8 @@ import (
 func initCResourceHandlers(cresourceRouter fiber.Router) {
 	cresourceRouter.Get("/", cResourceListHandler())
 	cresourceRouter.Get("/:id", cResourceDetailHandler())
+
+	cresourceRouter.Use(auth.CheckToken(db.AdminUT))
 	cresourceRouter.Post("/", cResourceCreateHandler())
 	cresourceRouter.Put("/:id", cResourceUpdateHandler())
 	cresourceRouter.Delete("/:id", cResourceDeleteHandler())

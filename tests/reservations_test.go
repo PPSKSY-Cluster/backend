@@ -20,7 +20,7 @@ func Test_reservations(t *testing.T) {
 
 	//TODO: Change the mail endpoint!
 	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user, false)
 
 	start := time.Now()
 	end := start.Add(time.Minute * 3)
