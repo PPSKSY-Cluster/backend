@@ -1,0 +1,9 @@
+# Default values configuration for the cluster thruster backend.
+# Feel free to create your own version according to your requirements
+#
+# As for naming conventions:
+# - start with lower case letters
+# - use camelcase
+#
+# For every property in this file we expect you write a docstring with a short
+# explanation on said property
