@@ -188,5 +188,5 @@ func DeleteReservation(_id primitive.ObjectID) error {
 }
 
 func CheckExpired(reservation Reservation) bool {
-	return time.Now().After(time.UnixMicro(reservation.EndTime))
+	return time.Now().After(time.Unix(reservation.EndTime, 0))
 }

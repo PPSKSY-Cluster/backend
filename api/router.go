@@ -33,9 +33,7 @@ func InitRouter() (*fiber.App, error) {
 	api.Post("/login", loginHandler())
 	api.Post("/refresh", refreshHandler())
 
-	tokenRoutes := api.Group("/token-check")
-	tokenRoutes.Use(auth.CheckToken())
-	tokenRoutes.Post("/", tokenCheckHandler())
+	api.Post("/token-check", tokenCheckHandler())
 
 	userRoutes := api.Group("/users")
 	initUserHandlers(userRoutes)
@@ -45,6 +43,9 @@ func InitRouter() (*fiber.App, error) {
 
 	reservationRoutes := api.Group("/reservations")
 	initReservationHandlers(reservationRoutes)
+
+	notificationRoutes := api.Group("/notifications")
+	initNotificationHandlers(notificationRoutes)
 
 	return router, nil
 }
@@ -56,6 +57,11 @@ func InitRouter() (*fiber.App, error) {
 // @Router       /api/login [post]
 func tokenCheckHandler() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		bearerStr := c.Get("Authorization")
+		_, err := auth.GetClaimsFromAccessToken(bearerStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+		}
 		return c.SendStatus(200)
 	}
 }
@@ -102,12 +108,12 @@ func loginHandler() func(c *fiber.Ctx) error {
 		var login LoginPair
 
 		if err := c.BodyParser(&login); err != nil {
-			return c.SendStatus(500)
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		user, token, err := checkCredentialsF(login.Username, login.Password)
 		if err != nil {
-			return c.SendStatus(401)
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		c.JSON(bson.M{"token": token, "user": user})

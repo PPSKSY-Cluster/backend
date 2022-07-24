@@ -17,9 +17,9 @@ func Test_cresources(t *testing.T) {
 	}
 	defer db.DropDB(os.Getenv("DB_NAME"))
 
-	// create user
-	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	// create user with admin rights
+	user := db.User{Username: "foo", Password: "bar", Type: db.AdminUT}
+	tokenStr, createdUser := createUserAndLogin(t, app, user, true)
 
 	fooscResource := db.CResource{
 		Name:            "foos cresource",
