@@ -126,6 +126,7 @@ func reservationClusterHandler() func(c *fiber.Ctx) error {
 // @Produce      json
 // @Success      201  {object}  db.Reservation
 // @Failure      404  {object}  string
+// @Failure		 400  {object}  string
 // @Failure      500  {object}  string
 // @Router       /api/reservations/ [post]
 func reservationCreateHandler() func(c *fiber.Ctx) error {
@@ -256,6 +257,9 @@ func isAvailable(reservation db.Reservation) (bool, error) {
 	clusterReservations := make(map[int64]int64) //Maps startTime to nodes used
 
 	for _, r := range reservations {
+		if r.ID == reservation.ID { //If reservation already exists, skip this reservation
+			continue
+		}
 		for start := reservation.StartTime; start <= reservation.EndTime; start += 86400 {
 			if start < r.EndTime {
 				clusterReservations[start] += r.Nodes
@@ -265,8 +269,8 @@ func isAvailable(reservation db.Reservation) (bool, error) {
 		}
 	}
 
-	for n := range clusterReservations {
-		if cluster.Nodes-n > reservation.Nodes {
+	for _, n := range clusterReservations {
+		if cluster.Nodes-n < reservation.Nodes {
 			return false, nil
 		}
 	}
