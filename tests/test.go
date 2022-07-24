@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"time"
 
 	"github.com/PPSKSY-Cluster/backend/api"
 	"github.com/PPSKSY-Cluster/backend/auth"
@@ -50,21 +51,40 @@ type TestReq struct {
 	expectedData interface{}
 }
 
+type Mail struct {
+	Id          int       `json:"id"`
+	FromAdress  string    `json:"fromAdress"`
+	ToAdress    string    `json:"toAdress"`
+	Subject     string    `json:"subject"`
+	ReceivedOn  time.Time `json:"receivedOn"`
+	RawData     string    `json:"rawData"`
+	Attachments []string  `json:"attachments"`
+}
+
 // the provided user will be created, logged in
 // and the jwt token will be returned
-func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string, db.User) {
+// usually a user cannot be created with a specific type,
+// 'keepType' allows to use a workaround for that purpose
+func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User, keepType bool) (string, db.User) {
+	var createdUser db.User
 	expectUser := user
 	expectUser.Password = ""
-	createReq := TestReq{
-		description:  "Create one user (expect 201)",
-		expectedCode: 201,
-		route:        "/api/users/",
-		method:       "POST",
-		body:         user,
-		expectedData: expectUser,
-	}
+	if !keepType {
+		createReq := TestReq{
+			description:  "Create one user (expect 201)",
+			expectedCode: 201,
+			route:        "/api/users/",
+			method:       "POST",
+			body:         user,
+			expectedData: expectUser,
+		}
 
-	createdUser := executeTestReq[db.User](t, app, createReq, "")
+		createdUser = executeTestReq[db.User](t, app, createReq, "")
+	} else {
+		userWithHashPw := user
+		userWithHashPw.Password, _ = auth.HashPW(user.Password)
+		createdUser, _ = db.AddUserWithType(userWithHashPw)
+	}
 
 	loginReq := TestReq{
 		description:  "Login the previously created user (expect 200)",
@@ -144,6 +164,63 @@ func executeTestReq[T any](t assert.TestingT, app *fiber.App, test TestReq, bear
 	return data
 }
 
+func checkMailTime(t assert.TestingT, send time.Time) {
+	time.Sleep(time.Second * 30)
+
+	mail := checkMail()
+	diff := mail.ReceivedOn.Local().Sub(send)
+	assert.Less(t, diff, time.Second*1)
+
+	deleteMail()
+}
+
+func checkMailNotification(t assert.TestingT, to string, notification bool) {
+	time.Sleep(time.Second * 15)
+
+	email := checkMail()
+
+	subject := ""
+	if notification {
+		subject = "Cluster Reservierung wieder mÃ¶glich " //Look into changing this!
+	}
+
+	assert.Equal(t, subject, email.Subject)
+	deleteMail()
+}
+
+func checkMail() Mail {
+	var mails []Mail
+
+	r, err := http.Get("http://localhost:5080/api/email")
+	if err != nil {
+		panic(err)
+	}
+	defer r.Body.Close()
+
+	if err := json.NewDecoder(r.Body).Decode(&mails); err != nil {
+		panic(err)
+	}
+
+	if len(mails) == 0 {
+		return Mail{}
+	}
+
+	return mails[0]
+}
+
+func deleteMail() {
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", "http://localhost:5080/api/email", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := client.Do(req)
+	if err != nil || res.StatusCode != 200 {
+		panic(err)
+	}
+}
+
 func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 	expectedV := reflect.ValueOf(expectedData)
 	dataV := reflect.ValueOf(data)
@@ -161,6 +238,7 @@ func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 }
 
 func compareSlice(t assert.TestingT, expected reflect.Value, actual reflect.Value) {
+	assert.LessOrEqual(t, expected.Len(), actual.Len())
 	for i := 0; i < expected.Len(); i++ {
 		compareStruct(t, expected.Index(i), actual.Index(i))
 	}

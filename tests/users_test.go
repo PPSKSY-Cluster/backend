@@ -19,7 +19,7 @@ func Test_users(t *testing.T) {
 
 	// create user
 	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user, false)
 
 	editUser := db.User{ID: createdUser.ID, Username: "bar"}
 
