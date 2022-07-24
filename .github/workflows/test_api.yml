@@ -6,35 +6,40 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        mongodb-version: ['5.0']
-        mongodb-port: [42069]
         go-version: [1.18]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     
     steps:
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-          mongodb-port: ${{ matrix.mongodb-port }}
+      - uses: actions/checkout@v3
+
+      - name: Install docker-compose
+        run: sudo apt update && sudo apt install -y --no-install-recommends docker-compose
+
+      - name: Start containers
+        run: docker-compose -f "tests/docker-compose.yml" up -d --build
 
       - name: Setup go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
-      - uses: actions/checkout@v3
 
       - name: create test env file
         run: |
           cd tests
           touch .env
           echo DB_NAME=test >> .env
-          echo MONGODB_URI=mongodb://localhost:${{ matrix.mongodb-port }}/test >> .env
+          echo MONGODB_URI=mongodb://localhost:27017/test >> .env
           echo PORT=8080 >> .env
           echo CLIENT_URL=http://localhost:3000 >> .env
           echo BCRYPT_COST=10 >> .env
           echo RSA_KEY_SIZE=2048 >> .env
+          echo RELAY_HOST=localhost >> .env
+          echo RELAY_PORT=5025 >> .env
+          echo NOTIFICATION_INTERVAL=10 >> .env
           cd ..
 
       - run: go test ./tests -tags test
+
+      - name: Stop containers
+        run: docker-compose -f "tests/docker-compose.yml" down

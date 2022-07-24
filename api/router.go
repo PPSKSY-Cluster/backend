@@ -44,6 +44,9 @@ func InitRouter() (*fiber.App, error) {
 	reservationRoutes := api.Group("/reservations")
 	initReservationHandlers(reservationRoutes)
 
+	notificationRoutes := api.Group("/notifications")
+	initNotificationHandlers(notificationRoutes)
+
 	return router, nil
 }
 

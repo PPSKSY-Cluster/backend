@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/PPSKSY-Cluster/backend/db"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func Test_reservations(t *testing.T) {
@@ -18,21 +17,33 @@ func Test_reservations(t *testing.T) {
 	}
 	defer db.DropDB(os.Getenv("DB_NAME"))
 
-	//TODO: Change the mail endpoint!
-	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user, false)
+	user := db.User{Username: "foo", Password: "bar", Type: db.AdminUT}
+	tokenStr, createdUser := createUserAndLogin(t, app, user, true)
 
 	start := time.Now()
-	end := start.Add(time.Minute * 3)
+	end := start.Add(time.Second * 30)
+	send := start.Add(time.Second * 27)
 
-	//TODO: Actually think about how to test mail functionality -> Tests quit running, before task is scheduled
-	diff := (float64(end.Unix()) - float64(start.Unix())) * 0.9
-	mailTime := time.Unix(start.Unix()+int64(diff), 0)
+	fooscResource := db.CResource{
+		Name:            "foos cresource",
+		Description:     "this is foos first cresource",
+		Nodes:           10,
+		OperatingSystem: db.LinuxOS,
+		Owner:           createdUser.ID,
+	}
 
-	fmt.Println("The time the mail should arrive at: " + mailTime.String())
+	createOnecResourceTest := TestReq{
+		description:  "Create one resource (expect 201)",
+		expectedCode: 201,
+		route:        "/api/cresources/",
+		method:       "POST",
+		body:         fooscResource,
+		expectedData: fooscResource,
+	}
+	createdCResource := executeTestReq[db.CResource](t, app, createOnecResourceTest, tokenStr)
 
 	foosReservation := db.Reservation{
-		ClusterID: primitive.NewObjectID(),
+		ClusterID: createdCResource.ID,
 		Nodes:     10,
 		UserID:    createdUser.ID,
 		StartTime: start.Unix(),
@@ -44,7 +55,7 @@ func Test_reservations(t *testing.T) {
 	end = end.Truncate(time.Hour * 72)
 
 	expiredReservation := db.Reservation{
-		ClusterID: primitive.NewObjectID(),
+		ClusterID: createdCResource.ID,
 		Nodes:     10,
 		UserID:    createdUser.ID,
 		StartTime: start.Unix(),
@@ -52,7 +63,7 @@ func Test_reservations(t *testing.T) {
 		IsExpired: false,
 	}
 
-	createOneTest := TestReq{
+	createOneReservationTest := TestReq{
 		description:  "Create one Reservation (expect 201)",
 		expectedCode: 201,
 		route:        "/api/reservations/",
@@ -60,7 +71,8 @@ func Test_reservations(t *testing.T) {
 		body:         foosReservation,
 		expectedData: foosReservation,
 	}
-	createdReservation := executeTestReq[db.Reservation](t, app, createOneTest, tokenStr)
+	createdReservation := executeTestReq[db.Reservation](t, app, createOneReservationTest, tokenStr)
+	checkMailTime(t, send)
 
 	getAllTest := TestReq{
 		description:  "Get all reservations (expect 200)",
