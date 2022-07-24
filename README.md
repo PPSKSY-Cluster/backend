@@ -30,6 +30,10 @@ go build -o ./build/server main.go
 
 To run tests execute
 ```
+docker-compose -f ./tests/docker-compose.yml up -d
+```
+-For running a local instance of mongodb and the fake-smtp-server
+```
 go test -v ./tests -tags test
 ```
 -v for verbosity

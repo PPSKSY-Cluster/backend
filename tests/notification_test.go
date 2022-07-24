@@ -23,8 +23,9 @@ func Test_notifications(t *testing.T) {
 		Username: "foo",
 		Password: "bar",
 		Mail:     "foo@bar.com",
+		Type:     db.AdminUT,
 	}
-	tokenStr, createdUser := createUserAndLogin(t, app, user)
+	tokenStr, createdUser := createUserAndLogin(t, app, user, true)
 
 	foosResource := db.CResource{
 		Name:            "foos cresource",

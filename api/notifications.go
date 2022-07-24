@@ -8,7 +8,7 @@ import (
 )
 
 func initNotificationHandlers(notificationRouter fiber.Router) {
-	notificationRouter.Use(auth.CheckToken())
+	notificationRouter.Use(auth.CheckToken(db.UserUT))
 	notificationRouter.Post("/", notificationCreateHandler())
 }
 

@@ -17,8 +17,8 @@ func Test_reservations(t *testing.T) {
 	}
 	defer db.DropDB(os.Getenv("DB_NAME"))
 
-	user := db.User{Username: "foo", Password: "bar"}
-	tokenStr, createdUser := createUserAndLogin(t, app, user, false)
+	user := db.User{Username: "foo", Password: "bar", Type: db.AdminUT}
+	tokenStr, createdUser := createUserAndLogin(t, app, user, true)
 
 	start := time.Now()
 	end := start.Add(time.Second * 30)
