@@ -9,7 +9,7 @@ import (
 )
 
 func initReservationHandlers(reservationRouter fiber.Router) {
-	reservationRouter.Use(auth.CheckToken())
+	reservationRouter.Use(auth.CheckToken(db.UserUT))
 	reservationRouter.Get("/", reservationListHandler())
 	reservationRouter.Get("/:id", reservationDetailHandler())
 	reservationRouter.Get("/users/:uId", reservationUserHandler())

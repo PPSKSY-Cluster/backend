@@ -63,19 +63,28 @@ type Mail struct {
 
 // the provided user will be created, logged in
 // and the jwt token will be returned
-func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string, db.User) {
+// usually a user cannot be created with a specific type,
+// 'keepType' allows to use a workaround for that purpose
+func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User, keepType bool) (string, db.User) {
+	var createdUser db.User
 	expectUser := user
 	expectUser.Password = ""
-	createReq := TestReq{
-		description:  "Create one user (expect 201)",
-		expectedCode: 201,
-		route:        "/api/users/",
-		method:       "POST",
-		body:         user,
-		expectedData: expectUser,
-	}
+	if !keepType {
+		createReq := TestReq{
+			description:  "Create one user (expect 201)",
+			expectedCode: 201,
+			route:        "/api/users/",
+			method:       "POST",
+			body:         user,
+			expectedData: expectUser,
+		}
 
-	createdUser := executeTestReq[db.User](t, app, createReq, "")
+		createdUser = executeTestReq[db.User](t, app, createReq, "")
+	} else {
+		userWithHashPw := user
+		userWithHashPw.Password, _ = auth.HashPW(user.Password)
+		createdUser, _ = db.AddUserWithType(userWithHashPw)
+	}
 
 	loginReq := TestReq{
 		description:  "Login the previously created user (expect 200)",
@@ -90,11 +99,27 @@ func createUserAndLogin(t assert.TestingT, app *fiber.App, user db.User) (string
 		Token string  `json:"token"`
 	}
 
-	token := executeTestReq[LoginRes](t, app, loginReq, "")
-	compare(t, expectUser, token.User)
+	loginRes := executeTestReq[LoginRes](t, app, loginReq, "")
+	compare(t, expectUser, loginRes.User)
 
-	bearerStr := "Bearer " + token.Token
-	return bearerStr, createdUser
+	refreshBearerStr := "Bearer " + loginRes.Token
+
+	accessReq := TestReq{
+		description:  "Get an access token for the created user (expect 200)",
+		expectedCode: 200,
+		route:        "/api/refresh",
+		method:       "POST",
+		body:         nil,
+	}
+
+	type AccessRes struct {
+		Token string `json:"token"`
+	}
+
+	accessRes := executeTestReq[AccessRes](t, app, accessReq, refreshBearerStr)
+	accessBearerStr := "Bearer " + accessRes.Token
+
+	return accessBearerStr, createdUser
 }
 
 // executes a test request with the given params and
@@ -213,6 +238,7 @@ func compare(t assert.TestingT, expectedData interface{}, data interface{}) {
 }
 
 func compareSlice(t assert.TestingT, expected reflect.Value, actual reflect.Value) {
+	assert.LessOrEqual(t, expected.Len(), actual.Len())
 	for i := 0; i < expected.Len(); i++ {
 		compareStruct(t, expected.Index(i), actual.Index(i))
 	}
