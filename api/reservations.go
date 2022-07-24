@@ -126,6 +126,7 @@ func reservationClusterHandler() func(c *fiber.Ctx) error {
 // @Produce      json
 // @Success      201  {object}  db.Reservation
 // @Failure      404  {object}  string
+// @Failure		 400  {object}  string
 // @Failure      500  {object}  string
 // @Router       /api/reservations/ [post]
 func reservationCreateHandler() func(c *fiber.Ctx) error {
@@ -133,6 +134,19 @@ func reservationCreateHandler() func(c *fiber.Ctx) error {
 		r := new(db.Reservation)
 		if err := c.BodyParser(r); err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		if r.StartTime > r.EndTime {
+			return fiber.NewError(fiber.StatusBadRequest, "Start-date cannot be later than end-date")
+		}
+
+		b, err := isAvailable(*r)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		if !b {
+			return fiber.NewError(fiber.StatusBadRequest, "Not enough nodes available to make reservation")
 		}
 
 		reservation, err := db.AddReservation(*r)
@@ -170,6 +184,19 @@ func reservationUpdateHandler() func(c *fiber.Ctx) error {
 		id, err := primitive.ObjectIDFromHex(idStr)
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		if r.StartTime > r.EndTime {
+			return fiber.NewError(fiber.StatusBadRequest, "Start-date cannot be later than end-date")
+		}
+
+		b, err := isAvailable(*r)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		if !b {
+			return fiber.NewError(fiber.StatusBadRequest, "Not enough nodes available to make reservation")
 		}
 
 		reservation, err := db.EditReservation(id, *r)
@@ -213,4 +240,40 @@ func reservationDeleteHandler() func(c *fiber.Ctx) error {
 
 		return c.SendStatus(204)
 	}
+}
+
+func isAvailable(reservation db.Reservation) (bool, error) {
+
+	cluster, err := db.GetCResourceById(reservation.ClusterID)
+	if err != nil {
+		return false, err
+	}
+
+	reservations, err := db.GetReservationsByClusterId(reservation.ClusterID)
+	if err != nil {
+		return false, err
+	}
+
+	clusterReservations := make(map[int64]int64) //Maps startTime to nodes used
+
+	for _, r := range reservations {
+		if r.ID == reservation.ID { //If reservation already exists, skip this reservation
+			continue
+		}
+		for start := reservation.StartTime; start <= reservation.EndTime; start += 86400 {
+			if start < r.EndTime {
+				clusterReservations[start] += r.Nodes
+			} else {
+				clusterReservations[start] += 0
+			}
+		}
+	}
+
+	for _, n := range clusterReservations {
+		if cluster.Nodes-n < reservation.Nodes {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }

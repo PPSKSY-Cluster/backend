@@ -44,6 +44,24 @@ func Test_reservations(t *testing.T) {
 
 	foosReservation := db.Reservation{
 		ClusterID: createdCResource.ID,
+		Nodes:     5,
+		UserID:    createdUser.ID,
+		StartTime: start.Unix(),
+		EndTime:   end.Unix(),
+		IsExpired: false,
+	}
+
+	endBeforeStartReservation := db.Reservation{
+		ClusterID: createdCResource.ID,
+		Nodes:     5,
+		UserID:    createdUser.ID,
+		StartTime: end.Unix(),
+		EndTime:   start.Unix(),
+		IsExpired: false,
+	}
+
+	insufficienNodesReservation := db.Reservation{
+		ClusterID: createdCResource.ID,
 		Nodes:     10,
 		UserID:    createdUser.ID,
 		StartTime: start.Unix(),
@@ -52,11 +70,11 @@ func Test_reservations(t *testing.T) {
 	}
 
 	start = start.Truncate(time.Hour * 24)
-	end = end.Truncate(time.Hour * 72)
+	end = end.Truncate(time.Hour * 24)
 
 	expiredReservation := db.Reservation{
 		ClusterID: createdCResource.ID,
-		Nodes:     10,
+		Nodes:     4,
 		UserID:    createdUser.ID,
 		StartTime: start.Unix(),
 		EndTime:   end.Unix(),
@@ -115,7 +133,7 @@ func Test_reservations(t *testing.T) {
 	executeTestReq[db.Reservation](t, app, getOneTest, tokenStr)
 
 	editedReservation := createdReservation
-	editedReservation.Nodes = 15
+	editedReservation.Nodes = 6
 	editOneTest := TestReq{
 		description:  "Edit one reservation (expect 200)",
 		expectedCode: 200,
@@ -125,6 +143,26 @@ func Test_reservations(t *testing.T) {
 		expectedData: editedReservation,
 	}
 	executeTestReq[db.Reservation](t, app, editOneTest, tokenStr)
+
+	endBeforeStartTest := TestReq{
+		description:  "Add one reservation where end < start",
+		expectedCode: 400,
+		route:        "/api/reservations/",
+		method:       "POST",
+		body:         endBeforeStartReservation,
+		expectedData: nil,
+	}
+	_ = executeTestReq[db.Reservation](t, app, endBeforeStartTest, tokenStr)
+
+	insufficienNodesTest := TestReq{
+		description:  "Add one reservation with more nodes than the cluster has available",
+		expectedCode: 400,
+		route:        "/api/reservations",
+		method:       "POST",
+		body:         insufficienNodesReservation,
+		expectedData: nil,
+	}
+	_ = executeTestReq[db.Reservation](t, app, insufficienNodesTest, tokenStr)
 
 	deleteOneTest := TestReq{
 		description:  "Delete one reservation (expect 204)",
